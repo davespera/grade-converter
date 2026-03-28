@@ -30,7 +30,7 @@ services:
     networks:
       - activepieces
   postgres:
-    image: 'postgres:14.4'
+    image: 'postgres:latest'
     container_name: postgres
     restart: unless-stopped
     env_file: .env
@@ -39,11 +39,14 @@ services:
       - 'POSTGRES_PASSWORD=${AP_POSTGRES_PASSWORD}'
       - 'POSTGRES_USER=${AP_POSTGRES_USERNAME}'
     volumes:
+      # Create database
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      # Persist data
       - postgres_data:/var/lib/postgresql/data
     networks:
       - activepieces
   redis:
-    image: 'redis:7.0.7'
+    image: 'redis:latest'
     container_name: redis
     restart: unless-stopped
     volumes:
