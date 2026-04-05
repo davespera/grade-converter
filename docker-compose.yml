@@ -1,4 +1,22 @@
 services:
+  
+  # Fastapi
+  fastapi-backend:
+    build: .
+    container_name: fastapi-api
+    restart: unless-stopped
+    ports:
+      - '8000:8000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${API_DB_USER}:${API_DB_PASSWORD}@postgres:5432/${API_DB_NAME}
+    networks:
+      - app-network
+  
+  # Activepieces
   app:
     image: ghcr.io/activepieces/activepieces:0.79.0
     container_name: activepieces-app
@@ -14,7 +32,8 @@ services:
     volumes:
       - ./cache:/usr/src/app/cache
     networks:
-      - activepieces
+      - app-network
+
   worker:
     image: ghcr.io/activepieces/activepieces:0.79.0
     restart: unless-stopped
@@ -28,23 +47,32 @@ services:
     volumes:
       - ./cache:/usr/src/app/cache
     networks:
-      - activepieces
+      - app-network
+  
+  # Database
   postgres:
     image: 'postgres:latest'
     container_name: postgres
     restart: unless-stopped
     env_file: .env
     environment:
-      - 'POSTGRES_DB=${AP_POSTGRES_DATABASE}'
-      - 'POSTGRES_PASSWORD=${AP_POSTGRES_PASSWORD}'
-      - 'POSTGRES_USER=${AP_POSTGRES_USERNAME}'
+      - 'POSTGRES_DB=${POSTGRES_DB}'
+      - 'POSTGRES_PASSWORD=${POSTGRES_PASSWORD}'
+      - 'POSTGRES_USER=${POSTGRES_USER}'
     volumes:
       # Create database
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
       # Persist data
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
-      - activepieces
+      - app-network 
+
+  # Redis
   redis:
     image: 'redis:latest'
     container_name: redis
@@ -52,9 +80,11 @@ services:
     volumes:
       - 'redis_data:/data'
     networks:
-      - activepieces
+      - app-network
+
 volumes:
   postgres_data:
   redis_data:
+
 networks:
-  activepieces:
+  app-network:
