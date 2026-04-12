@@ -1,8 +1,18 @@
 from __future__ import annotations
 from fastapi import FastAPI
+from fastapi.concurrency import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base
 from .routers import scales, transfer
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup code: Create database tables
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    # Shutdown code: Dispose of the engine
+    await engine.dispose()
 
 # API Metadata
 app = FastAPI(
@@ -17,6 +27,7 @@ app = FastAPI(
         "email": "support@university.edu",
     },
     #root_path="/backend",
+    lifespan=lifespan
 )
 
 # CORS Configuration
@@ -34,14 +45,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Database Initialization
-# This creates the tables defined in models.py upon startup
-@app.on_event("startup")
-async def startup():
-    async with engine.begin() as conn:
-        # This will create tables for academic_scales and grade_equivalences
-        await conn.run_sync(Base.metadata.create_all)
 
 # Include Routers
 app.include_router(scales.router)
