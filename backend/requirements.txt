@@ -3,3 +3,5 @@ fastapi[standard]
 SQLAlchemy
 pydantic
 asyncpg
+pytest
+aiosqlite

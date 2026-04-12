@@ -20,7 +20,10 @@ async def get_scales(db: AsyncSession, skip: int = 0, limit: int = 100):
     """Fetch all available scales for the administrative list view using pagination."""
     query = (
         # Pagination
-        select(models.AcademicScale).offset(skip).limit(limit)
+        select(models.AcademicScale)
+        .offset(skip)
+        .limit(limit)
+        #.options(selectinload(models.AcademicScale.equivalences))
     )
 
     result = await db.execute(query)
@@ -32,7 +35,8 @@ async def create_scale(db: AsyncSession, scale: schemas.AcademicScaleCreate):
     db.add(new_scale)
     await db.commit()
     await db.refresh(new_scale)
-    return new_scale
+    # Ensures relationships are loaded for the response model due to async
+    return await get_scale(db, new_scale.id)
 
 # --- Grade Equivalence Operations ---
 
