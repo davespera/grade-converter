@@ -39,10 +39,16 @@ class AcademicScaleBase(BaseModel):
 class AcademicScaleCreate(AcademicScaleBase):
     pass
 
+# Scales without equivalences
+class AcademicScaleList(AcademicScaleBase):
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
 class AcademicScale(AcademicScaleBase):
     id: int
-    # This allows you to nest the equivalences inside the scale object if needed
-    equivalences: List[GradeEquivalence] = []
+    # This allows to nest the equivalences inside the scale object if needed
+    equivalences: List[GradeEquivalence] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
 

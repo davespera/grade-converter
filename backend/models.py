@@ -19,7 +19,8 @@ class AcademicScale(Base):
     total_grades = Column(Integer)
     
     #__table_args__ = (UniqueConstraint('country_name', 'scale_description', name='_country_scale_uc'),)
-    equivalences = relationship("GradeEquivalence", back_populates="scale")
+    # Check whether lazy="selectin" is needed to avoid queries outside async IO (probably yes if option removed from crud.py)
+    equivalences = relationship("GradeEquivalence", back_populates="scale", lazy="selectin")
 
 class GradeEquivalence(Base):
     __tablename__ = "grade_equivalences"
