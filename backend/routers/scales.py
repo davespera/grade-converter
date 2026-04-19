@@ -1,22 +1,22 @@
 from __future__ import annotations 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
-from .. import crud, schemas, database
+from sqlmodel.ext.asyncio.session import AsyncSession
+from .. import crud, database, models
 
 router = APIRouter(
     prefix="/scales",
     tags=["Academic Scales Management"]
 )
 
-@router.post("/", response_model=schemas.AcademicScale)
+@router.post("/", response_model=models.AcademicScaleRead)
 async def create_scale(
-    scale: schemas.AcademicScaleCreate, 
+    scale: models.AcademicScaleCreate, 
     db: AsyncSession = Depends(database.get_database_session)
 ):
     return await crud.create_scale(db=db, scale=scale)
 
-@router.get("/", response_model=List[schemas.AcademicScale])
+@router.get("/", response_model=List[models.AcademicScaleRead])
 async def read_scales(
     skip: int = 0, 
     limit: int = 100, 
@@ -25,7 +25,7 @@ async def read_scales(
     scales = await crud.get_scales(db, skip=skip, limit=limit)
     return scales
 
-@router.get("/{scale_id}", response_model=schemas.AcademicScale)
+@router.get("/{scale_id}", response_model=models.AcademicScaleRead)
 async def read_scale(
     scale_id: int, 
     db: AsyncSession = Depends(database.get_database_session)
@@ -35,10 +35,10 @@ async def read_scale(
         raise HTTPException(status_code=404, detail="Scale not found")
     return db_scale
 
-@router.post("/{scale_id}/equivalences/", response_model=schemas.GradeEquivalence)
+@router.post("/{scale_id}/equivalences/", response_model=models.GradeEquivalenceRead)
 async def create_equivalence_for_scale(
     scale_id: int,
-    equivalence: schemas.GradeEquivalenceCreate,
+    equivalence: models.GradeEquivalenceCreate,
     db: AsyncSession = Depends(database.get_database_session)
 ):
     return await crud.create_scale_equivalence(db=db, equivalence=equivalence, scale_id=scale_id)

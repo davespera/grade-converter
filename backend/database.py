@@ -1,9 +1,10 @@
 from __future__ import annotations 
 import os
 from typing import AsyncGenerator
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.pool import NullPool
+from sqlmodel import SQLModel
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -27,8 +28,8 @@ AsyncSessionLocal = async_sessionmaker(
     autocommit=False,
 )
 
-# Database base class
-Base = declarative_base()
+# SQLModel metadata container kept for compatibility with the rest of the app and tests.
+Base = SQLModel
 
 # Dependency for getting database session
 async def get_database_session() -> AsyncGenerator[AsyncSession, None]:
