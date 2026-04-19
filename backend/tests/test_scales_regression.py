@@ -94,6 +94,53 @@ def test_get_scales_includes_equivalences_regression() -> None:
         asyncio.run(_teardown_schema())
 
 
+def test_get_scales_handles_mixed_equivalence_collections_regression() -> None:
+    asyncio.run(_setup_schema_and_seed())
+
+    app = FastAPI()
+    app.include_router(scales.router)
+    app.dependency_overrides[database.get_database_session] = _override_db_session
+
+    client = None
+    try:
+        async def _insert_second_scale_without_equivalences() -> None:
+            async with TestSessionLocal() as session:
+                session.add(
+                    models.AcademicScale(
+                        country_name="EMPTYLAND",
+                        scale_description="0-100",
+                        total_grades=101,
+                    )
+                )
+                await session.commit()
+
+        asyncio.run(_insert_second_scale_without_equivalences())
+
+        client = TestClient(app)
+        response = client.get("/scales/")
+        payload = response.json()
+
+        assert response.status_code == 200
+        assert isinstance(payload, list)
+        assert len(payload) == 2
+
+        by_country = {item["country_name"]: item for item in payload}
+        assert "TESTLAND" in by_country
+        assert "EMPTYLAND" in by_country
+
+        assert isinstance(by_country["TESTLAND"]["equivalences"], list)
+        assert len(by_country["TESTLAND"]["equivalences"]) == 1
+        assert by_country["TESTLAND"]["equivalences"][0]["origin_grade"] == "A"
+
+        assert isinstance(by_country["EMPTYLAND"]["equivalences"], list)
+        assert by_country["EMPTYLAND"]["equivalences"] == []
+    finally:
+        app.dependency_overrides.clear()
+        if client is not None:
+            client.close()
+        asyncio.run(_teardown_schema())
+
+
 def test_get_scale_by_id_includes_equivalences_regression() -> None:
     asyncio.run(_setup_schema_and_seed())
 
