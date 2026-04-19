@@ -1,6 +1,7 @@
 uvicorn[standard]
 fastapi[standard]
 SQLAlchemy
+sqlmodel
 pydantic
 asyncpg
 pytest
