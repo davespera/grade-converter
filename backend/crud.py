@@ -1,4 +1,4 @@
-from sqlalchemy.orm import selectinload
+#from sqlalchemy.orm import selectinload
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 from . import models
@@ -9,7 +9,7 @@ async def get_scale(db: AsyncSession, scale_id: int):
     """Fetch a specific scale and its nested equivalences."""
     query = (
         select(models.AcademicScale)
-        .options(selectinload(models.AcademicScale.equivalences))
+        #.options(selectinload(models.AcademicScale.equivalences))
         .where(models.AcademicScale.id == scale_id)
     )
 
@@ -20,7 +20,7 @@ async def get_scales(db: AsyncSession, skip: int = 0, limit: int = 100):
     """Fetch all available scales for the administrative list view using pagination."""
     query = (
         select(models.AcademicScale)
-        .options(selectinload(models.AcademicScale.equivalences))
+        #.options(selectinload(models.AcademicScale.equivalences))
         .offset(skip)
         .limit(limit)
     )
