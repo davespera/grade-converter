@@ -1,14 +1,13 @@
 services:
-  fastapi-backend:
+  fastapi:
     build: .
-    container_name: fastapi-api
+    container_name: fastapi
     restart: unless-stopped
     ports:
       - '8000:8000'
     depends_on:
       postgres:
         condition: service_healthy
-    env_file: .env
     environment:
       - DATABASE_URL=postgresql+asyncpg://${API_DB_USER}:${API_DB_PASSWORD}@postgres:5432/${API_DB_NAME}
     networks:
@@ -19,35 +18,12 @@ services:
     restart: unless-stopped
     ports:
       - "8080:80"
+    env_file:
+      - .env.shared
+      - .env
     environment: # In the future see if it can be eliminated
-      # Encryption key (REQUIRED — 32 hex characters)
-      # Generate with: openssl rand -hex 16
-      AP_ENCRYPTION_KEY: ${AP_ENCRYPTION_KEY}
-      # JWT secret (REQUIRED)
-      # Generate with: openssl rand -hex 32
-      AP_JWT_SECRET: ${AP_JWT_SECRET}
       # Frontend URL (set to your public URL)
       AP_FRONTEND_URL: ${AP_FRONTEND_URL:-http://localhost:8080}
-      # PostgreSQL connection
-      AP_POSTGRES_DATABASE: ${AP_POSTGRES_DATABASE}
-      AP_POSTGRES_HOST: ${AP_POSTGRES_HOST}
-      AP_POSTGRES_PORT: 5432
-      AP_POSTGRES_USERNAME: ${AP_POSTGRES_USERNAME}
-      AP_POSTGRES_PASSWORD: ${AP_POSTGRES_PASSWORD}
-      # Redis connection
-      AP_REDIS_HOST: redis
-      AP_REDIS_PORT: 6379
-      # Execution settings
-      AP_EXECUTION_MODE: UNSANDBOXED
-      AP_ENVIRONMENT: prod
-      # Telemetry (disable if desired)
-      AP_TELEMETRY_ENABLED: "false"
-      # Polling interval (seconds)
-      AP_TRIGGER_DEFAULT_POLL_INTERVAL: 5
-      # Webhook timeout
-      AP_WEBHOOK_TIMEOUT_SECONDS: 30
-      # Flow execution timeout
-      AP_FLOW_TIMEOUT_SECONDS: 600
     depends_on:
       postgres:
         condition: service_healthy
@@ -63,7 +39,9 @@ services:
     restart: unless-stopped
     depends_on:
       - activepieces
-    env_file: .env
+    env_file: 
+      - .env.shared
+      - .env
     environment:
       - AP_CONTAINER_TYPE=WORKER
     deploy:
@@ -77,11 +55,9 @@ services:
     image: postgres:latest
     container_name: activepieces-postgres
     restart: unless-stopped
-    env_file: .env
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    env_file: 
+      - .env.shared
+      - .env
     volumes:
       - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
       - activepieces-db:/var/lib/postgresql
