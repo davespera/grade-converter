@@ -3,10 +3,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from sqlmodel.ext.asyncio.session import AsyncSession
 from .. import crud, database, models
+from ..auth import handle_api_key
 
 router = APIRouter(
     prefix="/scales",
-    tags=["Academic Scales Management"]
+    tags=["Academic Scales Management"],
+    dependencies=[Depends(handle_api_key)],
 )
 
 @router.post("/", response_model=models.AcademicScaleRead)

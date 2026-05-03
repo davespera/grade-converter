@@ -1,5 +1,6 @@
 from enum import Enum
 from decimal import Decimal
+from datetime import datetime, timezone
 
 from pydantic import ConfigDict
 from sqlmodel import Field, Relationship, SQLModel
@@ -99,3 +100,23 @@ class TransferResponse(SQLModel):
     converted_literal: str
 
     model_config = ConfigDict(from_attributes=True)
+
+# --- API Authentication ---
+
+class ApiUserBase(SQLModel):
+    active: bool = Field(..., description="Whether the user is active or not")
+    api_key: str = Field(..., description="The API key for the user", unique=True)
+    # monthly_credits: int = Field(..., description="The number of credits the user has for the month")
+    # curr_credits: int = Field(..., description="The number of credits the user has left for the month")
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="The date and time the user was created",
+    )
+    is_internal: bool = Field(..., description="Whether the user is internal or not")
+
+
+class ApiUser(ApiUserBase, table=True):
+    __tablename__ = "api_users"
+
+    id: int | None = Field(default=None, primary_key=True, index=True)
+    name: str = Field(default="service", max_length=100)

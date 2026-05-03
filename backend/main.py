@@ -1,9 +1,10 @@
 from __future__ import annotations
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.concurrency import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base
 from .routers import scales, transfer
+from .auth import handle_api_key  
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -27,7 +28,10 @@ app = FastAPI(
         "email": "support@university.edu",
     },
     #root_path="/backend",
-    lifespan=lifespan
+    lifespan=lifespan,
+    dependencies=[
+        Depends(handle_api_key),
+    ]
 )
 
 # CORS Configuration

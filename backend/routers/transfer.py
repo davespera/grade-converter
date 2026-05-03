@@ -1,10 +1,14 @@
 from __future__ import annotations 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 from .. import database, models, crud
+from ..auth import handle_api_key
 
-router = APIRouter(prefix="/transfer", tags=["Transfer Logic"])
+router = APIRouter(
+    prefix="/transfer",
+    tags=["Transfer Logic"],
+    dependencies=[Depends(handle_api_key)],
+)
 
 @router.post("/convert", response_model=models.TransferResponse)
 async def convert_grade(
