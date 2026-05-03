@@ -39,7 +39,7 @@ async def create_scale(db: AsyncSession, scale: models.AcademicScaleCreate):
 
 # --- Grade Equivalence Operations ---
 
-async def create_scale_equivalence(
+async def create_grade_equivalence(
     db: AsyncSession, equivalence: models.GradeEquivalenceCreate, scale_id: int
 ):
     """Add a specific grade mapping to an existing scale."""
@@ -48,3 +48,14 @@ async def create_scale_equivalence(
     await db.commit()
     await db.refresh(db_equivalence)
     return db_equivalence
+
+async def get_grade_equivalence(db: AsyncSession, request: models.TransferRequest):
+    query = (
+        select(models.GradeEquivalence).where(
+            models.GradeEquivalence.scale_id == request.scale_id,
+            models.GradeEquivalence.origin_grade == request.origin_grade,
+        )
+    )
+
+    result = await db.exec(query)
+    return result.first()
