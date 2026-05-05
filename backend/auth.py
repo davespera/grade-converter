@@ -15,11 +15,7 @@ internal_routes = [
     '/transfer'
 ]
 
-print(f"Checking key: {key}")
-
 async def handle_api_key(req: Request, db: AsyncSession = Depends(get_database_session), key: str = Security(api_key)):
-    
-    print(f"--- DEBUG: Incoming Request to {req.url.path} with key: {key} ---")
 
     query = select(ApiUser).where(ApiUser.api_key == key).where(ApiUser.active == True)
     res = await db.exec(query)
@@ -27,7 +23,6 @@ async def handle_api_key(req: Request, db: AsyncSession = Depends(get_database_s
 
     # No active API key found
     if not api_key_data:
-        print("--- DEBUG: Auth Failed: No user found ---")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing or invalid API key"
@@ -41,16 +36,4 @@ async def handle_api_key(req: Request, db: AsyncSession = Depends(get_database_s
                 detail="You do not have permission to access this route"
             )
 
-    # Check if the user has any credits left
-    #if api_key_data.curr_credits <= 0:
-        #raise HTTPException(
-            #status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            #detail="You have no credits left for the month"
-        #)
-
     yield api_key_data
-
-    # If successful, decrement the user's credits
-    # api_key_data.curr_credits -= 1
-    # db.commit()
-    # db.refresh(api_key_data)
