@@ -46,6 +46,16 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     );
     ALTER TABLE grade_equivalences OWNER TO ${API_DB_USER};
 
+    CREATE TABLE api_users (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(100) NOT NULL,
+      active BOOLEAN NOT NULL DEFAULT TRUE,
+      api_key VARCHAR(255) NOT NULL UNIQUE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      is_internal BOOLEAN NOT NULL DEFAULT TRUE
+    );
+    ALTER TABLE api_users OWNER TO ${API_DB_USER};
+
     -- Populate initial data (Scales)
     INSERT INTO academic_scales (id, country_name, scale_description, total_grades) VALUES
     (1, 'AFGANISTAN', '50(1ª)-100(51ª)', 51),
@@ -67,5 +77,13 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     (3, 'A', 10.00, 4, 'MATRICULA'),
     (5, 'GE', 5.00, 1, 'APROBADO'),
     (5, 'SG', 9.00, 3, 'SOBRESALIENTE');
+
+    INSERT INTO api_users (name, active, api_key, is_internal)
+    VALUES ('activepieces', TRUE, '${FASTAPI_ACTIVEPIECES_API_KEY}', TRUE)
+    ON CONFLICT (api_key) DO UPDATE
+    SET
+      name = EXCLUDED.name,
+      active = EXCLUDED.active,
+      is_internal = EXCLUDED.is_internal;
     
 EOSQL

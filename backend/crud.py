@@ -56,6 +56,5 @@ async def get_grade_equivalence(db: AsyncSession, request: models.TransferReques
             models.GradeEquivalence.origin_grade == request.origin_grade,
         )
     )
-
     result = await db.exec(query)
     return result.first()
