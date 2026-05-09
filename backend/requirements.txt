@@ -2,7 +2,7 @@ uvicorn[standard]
 fastapi[standard]
 SQLAlchemy
 sqlmodel
-pydantic
+pydantic>=2.7.0
 asyncpg
 pytest
 aiosqlite
