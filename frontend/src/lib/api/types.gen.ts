@@ -177,7 +177,7 @@ export type ValidationError = {
     };
 };
 
-export type ReadScalesScalesGetData = {
+export type ReadScalesData = {
     body?: never;
     path?: never;
     query?: {
@@ -193,52 +193,52 @@ export type ReadScalesScalesGetData = {
     url: '/scales/';
 };
 
-export type ReadScalesScalesGetErrors = {
+export type ReadScalesErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type ReadScalesScalesGetError = ReadScalesScalesGetErrors[keyof ReadScalesScalesGetErrors];
+export type ReadScalesError = ReadScalesErrors[keyof ReadScalesErrors];
 
-export type ReadScalesScalesGetResponses = {
+export type ReadScalesResponses = {
     /**
-     * Response Read Scales Scales  Get
+     * Response Read Scales
      *
      * Successful Response
      */
     200: Array<AcademicScaleRead>;
 };
 
-export type ReadScalesScalesGetResponse = ReadScalesScalesGetResponses[keyof ReadScalesScalesGetResponses];
+export type ReadScalesResponse = ReadScalesResponses[keyof ReadScalesResponses];
 
-export type CreateScaleScalesPostData = {
+export type CreateScaleData = {
     body: AcademicScaleCreate;
     path?: never;
     query?: never;
     url: '/scales/';
 };
 
-export type CreateScaleScalesPostErrors = {
+export type CreateScaleErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type CreateScaleScalesPostError = CreateScaleScalesPostErrors[keyof CreateScaleScalesPostErrors];
+export type CreateScaleError = CreateScaleErrors[keyof CreateScaleErrors];
 
-export type CreateScaleScalesPostResponses = {
+export type CreateScaleResponses = {
     /**
      * Successful Response
      */
     200: AcademicScaleRead;
 };
 
-export type CreateScaleScalesPostResponse = CreateScaleScalesPostResponses[keyof CreateScaleScalesPostResponses];
+export type CreateScaleResponse = CreateScaleResponses[keyof CreateScaleResponses];
 
-export type ReadScaleScalesScaleIdGetData = {
+export type ReadScaleData = {
     body?: never;
     path: {
         /**
@@ -250,25 +250,25 @@ export type ReadScaleScalesScaleIdGetData = {
     url: '/scales/{scale_id}';
 };
 
-export type ReadScaleScalesScaleIdGetErrors = {
+export type ReadScaleErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type ReadScaleScalesScaleIdGetError = ReadScaleScalesScaleIdGetErrors[keyof ReadScaleScalesScaleIdGetErrors];
+export type ReadScaleError = ReadScaleErrors[keyof ReadScaleErrors];
 
-export type ReadScaleScalesScaleIdGetResponses = {
+export type ReadScaleResponses = {
     /**
      * Successful Response
      */
     200: AcademicScaleRead;
 };
 
-export type ReadScaleScalesScaleIdGetResponse = ReadScaleScalesScaleIdGetResponses[keyof ReadScaleScalesScaleIdGetResponses];
+export type ReadScaleResponse = ReadScaleResponses[keyof ReadScaleResponses];
 
-export type CreateEquivalenceForScaleScalesScaleIdEquivalencesPostData = {
+export type CreateEquivalenceForScaleData = {
     body: GradeEquivalenceCreate;
     path: {
         /**
@@ -280,48 +280,48 @@ export type CreateEquivalenceForScaleScalesScaleIdEquivalencesPostData = {
     url: '/scales/{scale_id}/equivalences/';
 };
 
-export type CreateEquivalenceForScaleScalesScaleIdEquivalencesPostErrors = {
+export type CreateEquivalenceForScaleErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type CreateEquivalenceForScaleScalesScaleIdEquivalencesPostError = CreateEquivalenceForScaleScalesScaleIdEquivalencesPostErrors[keyof CreateEquivalenceForScaleScalesScaleIdEquivalencesPostErrors];
+export type CreateEquivalenceForScaleError = CreateEquivalenceForScaleErrors[keyof CreateEquivalenceForScaleErrors];
 
-export type CreateEquivalenceForScaleScalesScaleIdEquivalencesPostResponses = {
+export type CreateEquivalenceForScaleResponses = {
     /**
      * Successful Response
      */
     200: GradeEquivalenceRead;
 };
 
-export type CreateEquivalenceForScaleScalesScaleIdEquivalencesPostResponse = CreateEquivalenceForScaleScalesScaleIdEquivalencesPostResponses[keyof CreateEquivalenceForScaleScalesScaleIdEquivalencesPostResponses];
+export type CreateEquivalenceForScaleResponse = CreateEquivalenceForScaleResponses[keyof CreateEquivalenceForScaleResponses];
 
-export type ConvertGradeTransferConvertPostData = {
+export type ConvertGradeData = {
     body: TransferRequest;
     path?: never;
     query?: never;
     url: '/transfer/convert';
 };
 
-export type ConvertGradeTransferConvertPostErrors = {
+export type ConvertGradeErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type ConvertGradeTransferConvertPostError = ConvertGradeTransferConvertPostErrors[keyof ConvertGradeTransferConvertPostErrors];
+export type ConvertGradeError = ConvertGradeErrors[keyof ConvertGradeErrors];
 
-export type ConvertGradeTransferConvertPostResponses = {
+export type ConvertGradeResponses = {
     /**
      * Successful Response
      */
     200: TransferResponse;
 };
 
-export type ConvertGradeTransferConvertPostResponse = ConvertGradeTransferConvertPostResponses[keyof ConvertGradeTransferConvertPostResponses];
+export type ConvertGradeResponse = ConvertGradeResponses[keyof ConvertGradeResponses];
 
 export type RootGetData = {
     body?: never;
