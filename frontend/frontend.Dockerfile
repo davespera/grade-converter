@@ -2,7 +2,8 @@
 FROM node:22-alpine AS deps
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
+# Try to remove flag in the future
 
 # Stage 2: Development (Target for local live-reloading)
 FROM deps AS development
