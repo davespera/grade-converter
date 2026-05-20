@@ -42,4 +42,4 @@ async def create_equivalence_for_scale(
     equivalence: models.GradeEquivalenceCreate,
     db: AsyncSession = Depends(database.get_database_session)
 ):
-    return await crud.create_scale_equivalence(db=db, equivalence=equivalence, scale_id=scale_id)
+    return await crud.create_grade_equivalence(db=db, equivalence=equivalence, scale_id=scale_id)
