@@ -1,10 +1,13 @@
 <script lang="ts">
     import type { PageData } from "./$types";
+    import { resolve } from '$app/paths';
 
     let { data }: { data : PageData } = $props();
 </script>
 
 <h1>Scales</h1>
+
+<a href={resolve('/scales/new')} class="btn-primary">Create New Scale</a>
 
 <ul>
     {#each data.scales as scale (scale.id)}
