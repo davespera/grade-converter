@@ -2,7 +2,7 @@
     import { enhance } from '$app/forms';
     //import type { components } from '$lib/api/schema'
     let { form } = $props();
-    let isSubmitting = false;
+    let isSubmitting = $state(false);
 
     let equivalences = $state([
         {
@@ -110,9 +110,3 @@
     </div>
 
 </form>    
-
-<style>
-  form { display: grid; gap: 0.6rem; max-width: 40rem; }
-  label { display: grid; gap: 0.25rem; }
-  .success { color: #0a7; }
-</style>
