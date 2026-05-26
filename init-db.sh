@@ -24,8 +24,8 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
 
     -- 5. Create table logic
 
-    CREATE TYPE grade_label AS ENUM ('APROBADO', 'NOTABLE', 'SOBRESALIENTE', 'MATRICULA');
-    ALTER TYPE grade_label OWNER TO ${API_DB_USER};
+    CREATE TYPE spanishLiteralEnum AS ENUM ('APROBADO', 'NOTABLE', 'SOBRESALIENTE', 'MATRICULA');
+    ALTER TYPE spanishLiteralEnum OWNER TO ${API_DB_USER};
 
     CREATE TABLE academic_scales (
         id SERIAL PRIMARY KEY,
@@ -42,7 +42,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
       origin_grade VARCHAR(50) NOT NULL,
       spanish_5_10 DECIMAL(4, 2) NOT NULL,
       spanish_1_4 INTEGER, -- Optional
-      spanish_literal grade_label NOT NULL
+      spanish_literal spanishLiteralEnum NOT NULL
     );
     ALTER TABLE grade_equivalences OWNER TO ${API_DB_USER};
 
@@ -85,5 +85,10 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
       name = EXCLUDED.name,
       active = EXCLUDED.active,
       is_internal = EXCLUDED.is_internal;
+
+    -- Reset sequences after inserting explicit primary key values to prevent duplicate key errors
+    SELECT setval('academic_scales_id_seq', COALESCE((SELECT MAX(id)+1 FROM academic_scales), 1), false);
+    SELECT setval('grade_equivalences_id_seq', COALESCE((SELECT MAX(id)+1 FROM grade_equivalences), 1), false);
+    SELECT setval('api_users_id_seq', COALESCE((SELECT MAX(id)+1 FROM api_users), 1), false);
     
 EOSQL

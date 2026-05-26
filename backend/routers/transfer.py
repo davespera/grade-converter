@@ -7,10 +7,9 @@ from ..auth import handle_api_key
 router = APIRouter(
     prefix="/transfer",
     tags=["Transfer Logic"],
-    dependencies=[Depends(handle_api_key)],
 )
 
-@router.post("/convert", response_model=models.TransferResponse)
+@router.post("/convert", response_model=models.TransferResponse, operation_id="convert_grade")
 async def convert_grade(
     request: models.TransferRequest,
     db: AsyncSession = Depends(database.get_database_session),

@@ -48,8 +48,11 @@ app.add_middleware(
 )
 
 # Include Routers
-app.include_router(scales.router, dependencies=[Depends(handle_api_key)]) # Include API key dependency
-app.include_router(transfer.router, dependencies=[Depends(handle_api_key)])
+# app.include_router(scales.router, dependencies=[Depends(handle_api_key)]) # Include API key dependency
+# app.include_router(transfer.router, dependencies=[Depends(handle_api_key)])
+
+app.include_router(scales.router) 
+app.include_router(transfer.router)
 
 # Root Health Check
 @app.get("/", tags=["Health"])

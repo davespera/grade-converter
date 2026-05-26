@@ -1,0 +1,11 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/frontend.Dockerfile
+      target: development # Stops the build at the development stage
+    volumes:
+      - ./frontend:/app/frontend
+      - /app/frontend/node_modules
+
+# WARNING: Remove this yml file in prod

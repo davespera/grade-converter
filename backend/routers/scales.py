@@ -8,17 +8,16 @@ from ..auth import handle_api_key
 router = APIRouter(
     prefix="/scales",
     tags=["Academic Scales Management"],
-    dependencies=[Depends(handle_api_key)],
 )
 
-@router.post("/", response_model=models.AcademicScaleRead)
+@router.post("/", response_model=models.AcademicScaleRead, operation_id="create_scale")
 async def create_scale(
     scale: models.AcademicScaleCreate, 
     db: AsyncSession = Depends(database.get_database_session)
 ):
     return await crud.create_scale(db=db, scale=scale)
 
-@router.get("/", response_model=List[models.AcademicScaleRead])
+@router.get("/", response_model=List[models.AcademicScaleRead], operation_id="read_scales")
 async def read_scales(
     skip: int = 0, 
     limit: int = 100, 
@@ -27,7 +26,7 @@ async def read_scales(
     scales = await crud.get_scales(db, skip=skip, limit=limit)
     return scales
 
-@router.get("/{scale_id}", response_model=models.AcademicScaleRead)
+@router.get("/{scale_id}", response_model=models.AcademicScaleRead, operation_id="read_scale")
 async def read_scale(
     scale_id: int, 
     db: AsyncSession = Depends(database.get_database_session)
@@ -37,10 +36,10 @@ async def read_scale(
         raise HTTPException(status_code=404, detail="Scale not found")
     return db_scale
 
-@router.post("/{scale_id}/equivalences/", response_model=models.GradeEquivalenceRead)
+@router.post("/{scale_id}/equivalences/", response_model=models.GradeEquivalenceRead, operation_id="create_equivalence_for_scale")
 async def create_equivalence_for_scale(
     scale_id: int,
     equivalence: models.GradeEquivalenceCreate,
     db: AsyncSession = Depends(database.get_database_session)
 ):
-    return await crud.create_scale_equivalence(db=db, equivalence=equivalence, scale_id=scale_id)
+    return await crud.create_grade_equivalence(db=db, equivalence=equivalence, scale_id=scale_id)

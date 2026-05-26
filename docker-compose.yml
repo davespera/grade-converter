@@ -1,10 +1,17 @@
 services:
-  fastapi:
-    build: .
-    container_name: fastapi
+  backend:
+    build: 
+      context: backend
+      dockerfile: backend.Dockerfile
+    container_name: fastapi-backend
     restart: unless-stopped
     ports:
       - '8000:8000'
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import socket; socket.create_connection(('localhost', 8000), 3).close()\""]
+      interval: 3s
+      timeout: 3s
+      retries: 5
     depends_on:
       postgres:
         condition: service_healthy
@@ -12,6 +19,21 @@ services:
       - DATABASE_URL=postgresql+asyncpg://${API_DB_USER}:${API_DB_PASSWORD}@postgres:5432/${API_DB_NAME}
     networks:
       - app-network
+
+  frontend:
+    build: 
+      context: .
+      dockerfile: frontend/frontend.Dockerfile
+    container_name: svelte-frontend
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - app-network  
+  
   activepieces:
     image: ghcr.io/activepieces/activepieces:latest
     container_name: activepieces
