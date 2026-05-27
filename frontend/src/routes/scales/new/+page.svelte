@@ -13,6 +13,13 @@
         }
     ]);
 
+    const spanishLiteralOptions = [
+        'APROBADO',
+        'NOTABLE',
+        'SOBRESALIENTE',
+        'MATRICULA'
+    ];
+
     function addEquivalence() {
         equivalences = [...equivalences, {
             origin_grade: '',
@@ -113,7 +120,12 @@
 
                         <label class="field">
                             <span>Spanish literal</span>
-                            <input name="spanish_literal" bind:value={eq.spanish_literal} required />
+                            <select name="spanish_literal" bind:value={eq.spanish_literal} required>
+                                <option value="" disabled>Select literal</option>
+                                {#each spanishLiteralOptions as option (option)}
+                                    <option value={option}>{option}</option>
+                                {/each}
+                            </select>
                         </label>
                     </div>
                     <div class="equivalence-actions">
