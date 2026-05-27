@@ -90,7 +90,7 @@ def test_convert_grade_returns_expected_conversion() -> None:
     try:
         client = TestClient(app)
         response = client.post(
-            "/transfer/convert",
+            "/transfer",
             json={"scale_id": 1, "grades": [{"origin_grade": "A"}]},
         )
         payload = response.json()
@@ -121,7 +121,7 @@ def test_convert_grade_returns_404_for_missing_scale() -> None:
     try:
         client = TestClient(app)
         response = client.post(
-            "/transfer/convert",
+            "/transfer",
             json={"scale_id": 999, "grades": [{"origin_grade": "A"}]},
         )
 
@@ -145,7 +145,7 @@ def test_convert_grade_returns_404_for_missing_equivalence() -> None:
     try:
         client = TestClient(app)
         response = client.post(
-            "/transfer/convert",
+            "/transfer",
             json={"scale_id": 1, "grades": [{"origin_grade": "A"}]},
         )
 
@@ -169,7 +169,7 @@ def test_convert_grade_returns_multiple_conversions_with_subjects() -> None:
     try:
         client = TestClient(app)
         response = client.post(
-            "/transfer/convert",
+            "/transfer",
             json={
                 "scale_id": 1,
                 "grades": [
