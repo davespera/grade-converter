@@ -246,7 +246,7 @@ def test_create_equivalence_for_scale_returns_created_equivalence() -> None:
         assert response.status_code == 200
         assert payload["scale_id"] == 1
         assert payload["origin_grade"] == "B"
-        assert payload["spanish_5_10"] == 8.5
+        assert payload["spanish_5_10"] == "8.50"
         assert payload["spanish_1_4"] == 3
         assert payload["spanish_literal"] == "SOBRESALIENTE"
         assert "id" in payload
