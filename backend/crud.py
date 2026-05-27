@@ -49,11 +49,11 @@ async def create_grade_equivalence(
     await db.refresh(db_equivalence)
     return db_equivalence
 
-async def get_grade_equivalence(db: AsyncSession, request: models.TransferRequest):
+async def get_grade_equivalence(db: AsyncSession, scale_id: int, origin_grade: str):
     query = (
         select(models.GradeEquivalence).where(
-            models.GradeEquivalence.scale_id == request.scale_id,
-            models.GradeEquivalence.origin_grade == request.origin_grade,
+            models.GradeEquivalence.scale_id == scale_id,
+            models.GradeEquivalence.origin_grade == origin_grade,
         )
     )
     result = await db.exec(query)

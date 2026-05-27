@@ -28,7 +28,7 @@
           "valid": true,
           "settings": {
             "input": {
-              "url": "http://fastapi:8000/transfer/convert",
+              "url": "http://backend:8000/transfer/convert",
               "body": {
                 "data": "{\n  \"scale_id\": {{trigger.body.scale_id}},\n  \"origin_grade\": \"{{trigger.body.origin_grade}}\"\n}"
               },

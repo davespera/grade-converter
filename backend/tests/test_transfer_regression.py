@@ -60,6 +60,15 @@ async def _setup_schema_and_seed(include_equivalence: bool = True) -> None:
                     spanish_literal=models.SpanishLiteralEnum.SOBRESALIENTE,
                 )
             )
+            session.add(
+                models.GradeEquivalence(
+                    scale_id=scale.id,
+                    origin_grade="B",
+                    spanish_5_10=Decimal("8.00"),
+                    spanish_1_4=3,
+                    spanish_literal=models.SpanishLiteralEnum.NOTABLE,
+                )
+            )
 
         await session.commit()
 
@@ -82,14 +91,18 @@ def test_convert_grade_returns_expected_conversion() -> None:
         client = TestClient(app)
         response = client.post(
             "/transfer/convert",
-            json={"scale_id": 1, "origin_grade": "A"},
+            json={"scale_id": 1, "grades": [{"origin_grade": "A"}]},
         )
         payload = response.json()
 
         assert response.status_code == 200
-        assert payload["original"] == "A"
-        assert payload["converted_5_10"] == "9.00"
-        assert payload["converted_literal"] == "SOBRESALIENTE"
+        assert "conversion" in payload
+        assert isinstance(payload["conversion"], list)
+        assert len(payload["conversion"]) == 1
+        assert payload["conversion"][0]["origin_grade"] == "A"
+        assert payload["conversion"][0]["converted_5_10"] == "9.00"
+        assert payload["conversion"][0]["converted_literal"] == "SOBRESALIENTE"
+        assert payload["conversion"][0]["subject"] is None
     finally:
         app.dependency_overrides.clear()
         if client is not None:
@@ -109,7 +122,7 @@ def test_convert_grade_returns_404_for_missing_scale() -> None:
         client = TestClient(app)
         response = client.post(
             "/transfer/convert",
-            json={"scale_id": 999, "origin_grade": "A"},
+            json={"scale_id": 999, "grades": [{"origin_grade": "A"}]},
         )
 
         assert response.status_code == 404
@@ -133,11 +146,49 @@ def test_convert_grade_returns_404_for_missing_equivalence() -> None:
         client = TestClient(app)
         response = client.post(
             "/transfer/convert",
-            json={"scale_id": 1, "origin_grade": "A"},
+            json={"scale_id": 1, "grades": [{"origin_grade": "A"}]},
         )
 
         assert response.status_code == 404
         assert response.json()["detail"] == "No equivalence found for this grade"
+    finally:
+        app.dependency_overrides.clear()
+        if client is not None:
+            client.close()
+        asyncio.run(_teardown_schema())
+
+
+def test_convert_grade_returns_multiple_conversions_with_subjects() -> None:
+    asyncio.run(_setup_schema_and_seed())
+
+    app = FastAPI()
+    app.include_router(transfer.router)
+    app.dependency_overrides[database.get_database_session] = _override_db_session
+
+    client = None
+    try:
+        client = TestClient(app)
+        response = client.post(
+            "/transfer/convert",
+            json={
+                "scale_id": 1,
+                "grades": [
+                    {"origin_grade": "A", "subject": "Math"},
+                    {"origin_grade": "B"},
+                ],
+            },
+        )
+        payload = response.json()
+
+        assert response.status_code == 200
+        assert "conversion" in payload
+        assert len(payload["conversion"]) == 2
+        assert payload["conversion"][0]["origin_grade"] == "A"
+        assert payload["conversion"][0]["subject"] == "Math"
+        assert payload["conversion"][0]["converted_literal"] == "SOBRESALIENTE"
+        assert payload["conversion"][1]["origin_grade"] == "B"
+        assert payload["conversion"][1]["subject"] is None
+        assert payload["conversion"][1]["converted_literal"] == "NOTABLE"
     finally:
         app.dependency_overrides.clear()
         if client is not None:

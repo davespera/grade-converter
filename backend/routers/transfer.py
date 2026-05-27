@@ -14,21 +14,30 @@ async def convert_grade(
     request: models.TransferRequest,
     db: AsyncSession = Depends(database.get_database_session),
 ):
-    # Find the scale
-    scale = await crud.get_scale(db, scale_id=request.scale_id)
-    
-    if not scale:
-        raise HTTPException(status_code=404, detail="Academic scale not found")
-    
-    # Find the specific equivalence
-    equivalence = await crud.get_grade_equivalence(db, request=request)
-    
-    if not equivalence:
-        raise HTTPException(status_code=404, detail="No equivalence found for this grade")
+
+    conversion = []
+
+    for grade in request.grades:
+        # Find the scale
+        scale = await crud.get_scale(db, scale_id=request.scale_id)
         
-    # Map DB model to Response schema
-    return models.TransferResponse(
-        original=equivalence.origin_grade,
-        converted_5_10=equivalence.spanish_5_10,
-        converted_literal=equivalence.spanish_literal.value,
-    )    
+        if not scale:
+            raise HTTPException(status_code=404, detail="Academic scale not found")
+        
+        # Find the specific equivalence
+        equivalence = await crud.get_grade_equivalence(db, scale_id=request.scale_id, origin_grade=grade.origin_grade)
+        
+        if not equivalence:
+            raise HTTPException(status_code=404, detail="No equivalence found for this grade")
+            
+        # Map DB model to GradeOutput schema
+        conversion.append(
+            models.GradeOutput(
+                subject=grade.subject,
+                origin_grade=equivalence.origin_grade,
+                converted_5_10=equivalence.spanish_5_10,
+                converted_literal=equivalence.spanish_literal.value,
+            )
+        )
+
+    return models.TransferResponse(conversion=conversion)
