@@ -5,13 +5,7 @@
 	import { onMount } from 'svelte';
 
 	let { children } = $props();
-	let theme = $state('light');
-
-	const navLinks = [
-		{ label: 'Home', href: resolve('/') },
-		{ label: 'Scales', href: resolve('/scales') },
-		{ label: 'New Scale', href: resolve('/scales/new') }
-	];
+	let theme = $state('dark');
 
 	const applyTheme = (value: string) => {
 		document.documentElement.dataset.theme = value;
@@ -20,17 +14,16 @@
 
 	onMount(() => {
 		const stored = localStorage.getItem('theme');
-		const preferred =
-			stored ??
-			(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+		const preferred = stored === 'light' || stored === 'dark' ? stored : 'dark';
 		theme = preferred;
 		applyTheme(preferred);
 	});
 
 	const toggleTheme = () => {
-		theme = theme === 'dark' ? 'light' : 'dark';
-		applyTheme(theme);
-		localStorage.setItem('theme', theme);
+		const next = theme === 'dark' ? 'light' : 'dark';
+		theme = next;
+		applyTheme(next);
+		localStorage.setItem('theme', next);
 	};
 </script>
 
@@ -50,6 +43,14 @@
 			<nav class="nav-links">
 				<a class="btn-secondary" href={resolve('/scales')}>Scales</a>
 				<a class="btn-primary" href={resolve('/scales/new')}>New Scale</a>
+				<button
+					class="btn-ghost theme-toggle"
+					type="button"
+					aria-pressed={theme === 'dark'}
+					onclick={toggleTheme}
+				>
+					{theme === 'dark' ? 'Light mode' : 'Dark mode'}
+				</button>
 			</nav>
 		</div>
 	</header>
