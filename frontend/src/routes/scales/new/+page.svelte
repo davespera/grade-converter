@@ -2,7 +2,7 @@
     import { enhance } from '$app/forms';
     //import type { components } from '$lib/api/schema'
     let { form } = $props();
-    let isSubmitting = false;
+    let isSubmitting = $state(false);
 
     let equivalences = $state([
         {
@@ -29,90 +29,112 @@
     
 </script>
 
-<h1>Create New Scale & Associated Equivalences</h1>
-
-{#if form?.success}
-    <p class="success">OK {form.success}</p>
-{/if}
-
-<form method="POST" action="?/createScale" use:enhance={() => {
-    isSubmitting = true;
-    return async ({ update }) => {
-      await update();
-      isSubmitting = false;
-    };
-  }}>
-
-    <div class="form-select">
-        <label>
-            Country Name
-            <input name="country_name" required />
-        </label>
-
-        <label>
-            Scale Description
-            <input name="scale_description" placeholder="e.g., Min Grade - Max Grade" required />
-        </label>
-            
-        <label>
-            Total Number of Grades
-            <input name="total_grades" />
-        </label>
+<div class="page">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Create a new scale</h1>
+            <p class="page-subtitle">
+                Capture the grading structure and map each origin grade to its Spanish
+                equivalence.
+            </p>
+        </div>
     </div>
 
-    <div class="form-select">
-        <h2>Scale Equivalences</h2>
-        <p class="subtitle">Add as many equivalences as necessary</p>
+    {#if form?.success}
+        <div class="status status-success">Saved: {form.success}</div>
+    {/if}
 
-        <div class="row-container">
-            {#each equivalences as eq, index (index)}
-                <div class="equivalence-row">
-                    <label>
-                        Origin Grade
-                        <input name="origin_grade" bind:value={eq.origin_grade} required>
-                    </label>
-
-                    <label>
-                        Spanish Grade (1-4)
-                        <input name="spanish_grade_1_4" bind:value={eq.spanish_grade_1_4} required>
-                    </label>
-
-                    <label>
-                        Sapnish Grade (5-10)
-                        <input name="spanish_grade_5_10" bind:value={eq.spanish_grade_5_10} required>
-                    </label>
-
-                    <label>
-                        Spanish Literal
-                        <input name="spanish_literal" bind:value={eq.spanish_literal} required>
-                    </label>
+    <form
+        method="POST"
+        action="?/createScale"
+        class="form-stack"
+        use:enhance={() => {
+            isSubmitting = true;
+            return async ({ update }) => {
+                await update();
+                isSubmitting = false;
+            };
+        }}>
+        <section class="card">
+            <header class="card-header">
+                <div>
+                    <h2 class="card-title">Scale details</h2>
+                    <p class="card-subtitle">Describe the origin grading system.</p>
                 </div>
+            </header>
+            <div class="card-body form-grid">
+                <label class="field">
+                    <span>Country name</span>
+                    <input name="country_name" required placeholder="e.g., Chile" />
+                </label>
 
-                <button
-                    type="button"
-                    class="delete-btn"
-                    onclick={() => removeEquivalence(index)}>
-                    Remove Row
-                </button>
-            {/each}
+                <label class="field">
+                    <span>Scale description</span>
+                    <input
+                        name="scale_description"
+                        placeholder="e.g., Min grade - max grade"
+                        required />
+                </label>
 
-            <button
-                type="button"
-                class="add-btn"
-                onclick={addEquivalence}>
-                Add Equivalence
+                <label class="field">
+                    <span>Total number of grades</span>
+                    <input name="total_grades" placeholder="Optional" />
+                </label>
+            </div>
+        </section>
+
+        <section class="card">
+            <header class="card-header">
+                <div>
+                    <h2 class="card-title">Scale equivalences</h2>
+                    <p class="card-subtitle">Add as many equivalences as necessary.</p>
+                </div>
+            </header>
+            <div class="card-body">
+                {#each equivalences as eq, index (index)}
+                    <div class="equivalence-row">
+                        <label class="field">
+                            <span>Origin grade</span>
+                            <input name="origin_grade" bind:value={eq.origin_grade} required />
+                        </label>
+
+                        <label class="field">
+                            <span>Spanish grade (1-4)</span>
+                            <input
+                                name="spanish_grade_1_4"
+                                bind:value={eq.spanish_grade_1_4}
+                                placeholder="Optional" />
+                        </label>
+
+                        <label class="field">
+                            <span>Spanish grade (5-10)</span>
+                            <input name="spanish_grade_5_10" bind:value={eq.spanish_grade_5_10} required />
+                        </label>
+
+                        <label class="field">
+                            <span>Spanish literal</span>
+                            <input name="spanish_literal" bind:value={eq.spanish_literal} required />
+                        </label>
+                    </div>
+                    <div class="equivalence-actions">
+                        <button type="button" class="btn btn-ghost" onclick={() => removeEquivalence(index)}>
+                            Remove row
+                        </button>
+                    </div>
+                {/each}
+
+                <div class="equivalence-actions">
+                    <button type="button" class="btn btn-secondary" onclick={addEquivalence}>
+                        Add equivalence
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : 'Save scale'}
             </button>
         </div>
-        <br>
-        <button type="submit" class="submit-btn" disabled={isSubmitting}>
-            Save Scale
-        </button>
-    </div>
-
-</form>    
-
-<style>
-  form { display: grid; gap: 0.6rem; max-width: 40rem; }
-  label { display: grid; gap: 0.25rem; }
-  .success { color: #0a7; }
-</style>
+    </form>
+</div>
