@@ -79,7 +79,7 @@ def test_convert_grade_does_not_require_api_key_header() -> None:
     try:
         client = TestClient(app)
         response = client.post(
-            "/transfer/convert",
+            "/transfer",
             json={"scale_id": 1, "grades": [{"origin_grade": "A"}]},
         )
 

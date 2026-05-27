@@ -9,7 +9,7 @@ router = APIRouter(
     tags=["Transfer Logic"],
 )
 
-@router.post("/convert", response_model=models.TransferResponse, operation_id="convert_grade")
+@router.post("/", response_model=models.TransferResponse, operation_id="convert_grade")
 async def convert_grade(
     request: models.TransferRequest,
     db: AsyncSession = Depends(database.get_database_session),
