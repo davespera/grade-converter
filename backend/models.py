@@ -28,7 +28,7 @@ class GradeEquivalenceRead(GradeEquivalenceBase):
 class AcademicScaleBase(SQLModel):
     country_name: str = Field(max_length=100)
     scale_description: str = Field(max_length=255)
-    total_grades: int | None = None
+    total_grades: int | None = None # Defaults to None
 
 
 class AcademicScaleCreate(AcademicScaleBase):
@@ -48,21 +48,32 @@ class AcademicScaleRead(AcademicScaleBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-class TransferRequest(SQLModel):
-    """Schema for the Activepieces automation request"""
+class GradeInput(SQLModel):
+    """Schema for the grade to be converted"""
 
-    scale_id: int
+    subject: str | None = None
     origin_grade: str
 
+class TransferRequest(SQLModel):
+    """Schema for the transfer request"""
 
-class TransferResponse(SQLModel):
-    """The clean data sent back to the automation flow"""
+    scale_id: int
+    grades: list[GradeInput]
 
-    original: str
+class GradeOutput(SQLModel):
+    """Schema for the converted grade"""
+
+    subject: str | None = None
+    origin_grade: str
     converted_5_10: Decimal
     converted_literal: str
 
     model_config = ConfigDict(from_attributes=True)
+
+class TransferResponse(SQLModel):
+    """The clean data sent back"""
+
+    conversion: list[GradeOutput]
 
 # --- Tables ---
 
