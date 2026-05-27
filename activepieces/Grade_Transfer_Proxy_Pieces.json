@@ -28,9 +28,9 @@
           "valid": true,
           "settings": {
             "input": {
-              "url": "http://backend:8000/transfer/convert",
+              "url": "http://backend:8000/transfer/",
               "body": {
-                "data": "{\n  \"scale_id\": {{trigger.body.scale_id}},\n  \"origin_grade\": \"{{trigger.body.origin_grade}}\"\n}"
+                "data": "{\n  \"scale_id\": {{trigger.body.scale_id}},\n  \"grades\": {{trigger.body.grades}}\n}"
               },
               "method": "POST",
               "headers": {
@@ -126,11 +126,7 @@
                 "settings": {
                   "input": {
                     "fields": {
-                      "body": {
-                        "original": "{{step_1.body.original}}",
-                        "converted_5_10": "{{step_1.body.converted_5_10}}",
-                        "converted_literal": "{{step_1.body.converted_literal}}"
-                      },
+                      "body": "{{step_1.body}}",
                       "status": 200,
                       "headers": {}
                     },
