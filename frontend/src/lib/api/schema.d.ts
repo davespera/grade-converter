@@ -56,7 +56,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/transfer/convert": {
+    "/transfer/": {
         parameters: {
             query?: never;
             header?: never;
