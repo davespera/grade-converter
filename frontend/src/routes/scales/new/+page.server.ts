@@ -11,7 +11,7 @@ export const actions = {
 
 
 		const origin_grades = data.getAll('origin_grade') as string[];
-		const spanish_5_10s = data.getAll('spanish_5_10') as string[];
+		const spanish_5_10s = data.getAll('spanish_grade_5_10') as string[];
 		const spanish_1_4s = data.getAll('spanish_grade_1_4') as string[];
 		const spanish_literals = data.getAll('spanish_literal') as string[];
 

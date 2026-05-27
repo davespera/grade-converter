@@ -1,0 +1,9 @@
+{
+	"extends": "./tsconfig.json",
+	"include": [
+		"eslint.config.js",
+		"openapi-ts.config.ts",
+		"playwright.config.ts",
+		"vite.config.ts"
+	]
+}

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
+	import { onMount } from 'svelte';
 
 	let { children } = $props();
 	let theme = $state('light');
@@ -36,32 +36,29 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
-	<meta name="color-scheme" content="light dark" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="description" content="Modern grade conversion and academic scale management." />
 </svelte:head>
 
-<div class="app-shell">
-	<header class="app-header">
-		<div class="app-header-inner">
-			<div class="brand">
-				<div class="brand-mark"></div>
-				<div>
-					<div class="brand-title">Grade Converter</div>
-					<div class="brand-subtitle">Academic equivalence workspace</div>
-				</div>
-			</div>
+<div class="page-shell">
+	<header class="top-nav">
+		<div class="nav-inner">
+			<a class="brand" href={resolve('/')}
+				><span class="brand-mark">GC</span>
+				<span>Grade Converter</span></a
+			>
 			<nav class="nav-links">
-				{#each navLinks as link (link)}
-					<a href={link.href}>{link.label}</a>
-				{/each}
-				<button
-					type="button"
-					class="btn btn-ghost theme-toggle"
-					onclick={toggleTheme}
-					aria-pressed={theme === 'dark'}>
-					{theme === 'dark' ? 'Light mode' : 'Dark mode'}
-				</button>
+				<a class="btn-secondary" href={resolve('/scales')}>Scales</a>
+				<a class="btn-primary" href={resolve('/scales/new')}>New Scale</a>
 			</nav>
 		</div>
 	</header>
-	<main class="app-main">{@render children()}</main>
+
+	<main class="content">
+		{@render children()}
+	</main>
+
+	<footer class="site-footer">
+		Built for fast, reliable grade conversions with clear equivalence mapping.
+	</footer>
 </div>

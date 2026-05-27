@@ -136,5 +136,10 @@
                 {isSubmitting ? 'Saving...' : 'Save scale'}
             </button>
         </div>
-    </form>
+        <br>
+        <button type="submit" class="submit-btn" disabled={isSubmitting}>
+            Save Scale
+        </button>
+</form>
+
 </div>
