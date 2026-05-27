@@ -66,6 +66,13 @@
                         {/if}
                         <span class="tag">{scale.equivalences?.length ?? 0} equivalences</span>
                     </div>
+                    <div class="row-actions">
+                        <a
+                            href={resolve(`/scales/${scale.id}/equivalences/new`)}
+                            class="btn-tertiary">
+                            Add equivalence
+                        </a>
+                    </div>
                 </header>
 
                 {#if scale.equivalences && scale.equivalences.length > 0}
