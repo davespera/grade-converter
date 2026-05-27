@@ -146,6 +146,30 @@ export interface components {
             /** Scale Id */
             scale_id: number;
         };
+        /**
+         * GradeInput
+         * @description Schema for the grade to be converted
+         */
+        GradeInput: {
+            /** Subject */
+            subject?: string | null;
+            /** Origin Grade */
+            origin_grade: string;
+        };
+        /**
+         * GradeOutput
+         * @description Schema for the converted grade
+         */
+        GradeOutput: {
+            /** Subject */
+            subject?: string | null;
+            /** Origin Grade */
+            origin_grade: string;
+            /** Converted 5 10 */
+            converted_5_10: string;
+            /** Converted Literal */
+            converted_literal: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -158,25 +182,21 @@ export interface components {
         SpanishLiteralEnum: "APROBADO" | "NOTABLE" | "SOBRESALIENTE" | "MATRICULA";
         /**
          * TransferRequest
-         * @description Schema for the Activepieces automation request
+         * @description Schema for the transfer request
          */
         TransferRequest: {
             /** Scale Id */
             scale_id: number;
-            /** Origin Grade */
-            origin_grade: string;
+            /** Grades */
+            grades: components["schemas"]["GradeInput"][];
         };
         /**
          * TransferResponse
-         * @description The clean data sent back to the automation flow
+         * @description The clean data sent back
          */
         TransferResponse: {
-            /** Original */
-            original: string;
-            /** Converted 5 10 */
-            converted_5_10: string;
-            /** Converted Literal */
-            converted_literal: string;
+            /** Conversion */
+            conversion: components["schemas"]["GradeOutput"][];
         };
         /** ValidationError */
         ValidationError: {
