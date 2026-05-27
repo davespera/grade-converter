@@ -3,9 +3,27 @@
     import { resolve } from '$app/paths';
 
     let { data }: { data : PageData } = $props();
-    const scales = data.scales ?? [];
+    const scales = $derived(data.scales ?? []);
 </script>
 
+<section class="page-intro">
+    <div>
+        <p class="eyebrow">Scale Library</p>
+        <h1>Academic Scales</h1>
+        <p class="lead">Browse, review, and refine equivalences with confidence.</p>
+    </div>
+    <div class="actions">
+        <a href={resolve('/scales/new')} class="btn-primary">Create New Scale</a>
+        <a href={resolve('/')} class="btn-secondary">Back to Home</a>
+    </div>
+</section>
+
+{#if scales.length === 0}
+    <div class="empty-card">
+        <h2>No scales yet</h2>
+        <p class="lead">Create your first scale to start converting grades.</p>
+        <div class="hero-actions">
+            <a href={resolve('/scales/new')} class="btn-primary">Create New Scale</a>
 <section class="page-intro">
     <div>
         <p class="eyebrow">Scale Library</p>
@@ -36,7 +54,18 @@
                         <p class="muted">{scale.scale_description}</p>
                     </div>
                     <div class="tags">
+{:else}
+    <div class="scale-grid">
+        {#each scales as scale (scale.id)}
+            <article class="card scale-card">
+                <header>
+                    <div>
+                        <h3>{scale.country_name}</h3>
+                        <p class="muted">{scale.scale_description}</p>
+                    </div>
+                    <div class="tags">
                         {#if scale.total_grades}
+                            <span class="tag">{scale.total_grades} grades</span>
                             <span class="tag">{scale.total_grades} grades</span>
                         {/if}
                         <span class="tag">{scale.equivalences?.length ?? 0} equivalences</span>
@@ -65,7 +94,41 @@
                                 {/each}
                             </tbody>
                         </table>
+                        <span class="tag">{scale.equivalences?.length ?? 0} equivalences</span>
                     </div>
+                </header>
+
+                {#if scale.equivalences && scale.equivalences.length > 0}
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Origin</th>
+                                    <th>Spanish 1-4</th>
+                                    <th>Spanish 5-10</th>
+                                    <th>Literal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {#each scale.equivalences as equivalence (equivalence.id)}
+                                    <tr>
+                                        <td>{equivalence.origin_grade}</td>
+                                        <td>{equivalence.spanish_1_4 ?? '-'}</td>
+                                        <td>{equivalence.spanish_5_10}</td>
+                                        <td>{equivalence.spanish_literal}</td>
+                                    </tr>
+                                {/each}
+                            </tbody>
+                        </table>
+                    </div>
+                {:else}
+                    <p class="muted">No equivalences added yet.</p>
+                {/if}
+            </article>
+        {/each}
+    </div>
+{/if}
+
                 {:else}
                     <p class="muted">No equivalences added yet.</p>
                 {/if}

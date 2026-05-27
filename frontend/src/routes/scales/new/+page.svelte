@@ -140,6 +140,6 @@
         <button type="submit" class="submit-btn" disabled={isSubmitting}>
             Save Scale
         </button>
-    </div>
+</form>
 
-</form>    
+</div>

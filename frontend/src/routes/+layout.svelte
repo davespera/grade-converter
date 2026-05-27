@@ -2,6 +2,7 @@
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { resolve } from '$app/paths';
+	import { onMount } from 'svelte';
 
 	let { children } = $props();
 	let theme = $state('light');

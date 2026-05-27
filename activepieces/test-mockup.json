@@ -1,0 +1,199 @@
+{
+  "comment": "Test mockup for the updated Grade Transfer Proxy flows",
+  "description": "Multiple grades with subjects to test batch conversion",
+  "test_cases": [
+    {
+      "name": "Afghanistan Scale - Multiple grades",
+      "webhook_payload": {
+        "scale_id": 1,
+        "grades": [
+          {
+            "subject": "Mathematics",
+            "origin_grade": "50,00"
+          },
+          {
+            "subject": "Physics",
+            "origin_grade": "65,00"
+          },
+          {
+            "subject": "Chemistry",
+            "origin_grade": "80,00"
+          },
+          {
+            "subject": "Literature",
+            "origin_grade": "100,00"
+          }
+        ]
+      },
+      "expected_response": {
+        "status": 200,
+        "body": {
+          "conversion": [
+            {
+              "subject": "Mathematics",
+              "origin_grade": "50,00",
+              "converted_5_10": "5.00",
+              "converted_literal": "APROBADO"
+            },
+            {
+              "subject": "Physics",
+              "origin_grade": "65,00",
+              "converted_5_10": "7.00",
+              "converted_literal": "NOTABLE"
+            },
+            {
+              "subject": "Chemistry",
+              "origin_grade": "80,00",
+              "converted_5_10": "9.00",
+              "converted_literal": "SOBRESALIENTE"
+            },
+            {
+              "subject": "Literature",
+              "origin_grade": "100,00",
+              "converted_5_10": "10.00",
+              "converted_literal": "MATRICULA"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Albania Scale - Multiple grades",
+      "webhook_payload": {
+        "scale_id": 2,
+        "grades": [
+          {
+            "subject": "English",
+            "origin_grade": "5,00"
+          },
+          {
+            "subject": "History",
+            "origin_grade": "9,00"
+          },
+          {
+            "subject": "Geography",
+            "origin_grade": "10,00"
+          }
+        ]
+      },
+      "expected_response": {
+        "status": 200,
+        "body": {
+          "conversion": [
+            {
+              "subject": "English",
+              "origin_grade": "5,00",
+              "converted_5_10": "5.00",
+              "converted_literal": "APROBADO"
+            },
+            {
+              "subject": "History",
+              "origin_grade": "9,00",
+              "converted_5_10": "7.00",
+              "converted_literal": "NOTABLE"
+            },
+            {
+              "subject": "Geography",
+              "origin_grade": "10,00",
+              "converted_5_10": "9.00",
+              "converted_literal": "SOBRESALIENTE"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Germany Scale - Letter grades with mixed subjects",
+      "webhook_payload": {
+        "scale_id": 3,
+        "grades": [
+          {
+            "subject": "German",
+            "origin_grade": "D"
+          },
+          {
+            "subject": "Art",
+            "origin_grade": "B-"
+          },
+          {
+            "subject": "Sports",
+            "origin_grade": "A"
+          }
+        ]
+      },
+      "expected_response": {
+        "status": 200,
+        "body": {
+          "conversion": [
+            {
+              "subject": "German",
+              "origin_grade": "D",
+              "converted_5_10": "5.00",
+              "converted_literal": "APROBADO"
+            },
+            {
+              "subject": "Art",
+              "origin_grade": "B-",
+              "converted_5_10": "7.00",
+              "converted_literal": "NOTABLE"
+            },
+            {
+              "subject": "Sports",
+              "origin_grade": "A",
+              "converted_5_10": "10.00",
+              "converted_literal": "MATRICULA"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Edge case - Single grade (should still work)",
+      "webhook_payload": {
+        "scale_id": 5,
+        "grades": [
+          {
+            "subject": "Philosophy",
+            "origin_grade": "GE"
+          }
+        ]
+      },
+      "expected_response": {
+        "status": 200,
+        "body": {
+          "conversion": [
+            {
+              "subject": "Philosophy",
+              "origin_grade": "GE",
+              "converted_5_10": "5.00",
+              "converted_literal": "APROBADO"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Grade without subject (optional field)",
+      "webhook_payload": {
+        "scale_id": 5,
+        "grades": [
+          {
+            "origin_grade": "SG"
+          }
+        ]
+      },
+      "expected_response": {
+        "status": 200,
+        "body": {
+          "conversion": [
+            {
+              "origin_grade": "SG",
+              "converted_5_10": "9.00",
+              "converted_literal": "SOBRESALIENTE"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
