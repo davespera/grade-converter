@@ -27,11 +27,11 @@
           "settings": {
             "input": {
               "scale_id": "{{trigger.body.scale_id}}",
-              "origin_grade": "{{trigger.body.origin_grade}}"
+              "grades": "{{trigger.body.grades}}"
             },
             "sampleData": {},
             "sourceCode": {
-              "code": "export const code = async (inputs) => {\n  const response = await fetch('http://backend:8000/transfer/convert', {\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n    },\n    body: JSON.stringify({\n      scale_id: Number(inputs.scale_id),\n      origin_grade: String(inputs.origin_grade),\n    }),\n  });\n\n  const body = await response.json();\n\n  return {\n    status: response.status,\n    body,\n  };\n};",
+              "code": "export const code = async (inputs) => {\n  // grades should be an array of {subject, origin_grade} objects\n  const response = await fetch('http://backend:8000/transfer/', {\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n    },\n    body: JSON.stringify({\n      scale_id: Number(inputs.scale_id),\n      grades: inputs.grades,\n    }),\n  });\n\n  const body = await response.json();\n\n  return {\n    status: response.status,\n    body,\n  };\n};",
               "packageJson": "{}"
             },
             "errorHandlingOptions": {
