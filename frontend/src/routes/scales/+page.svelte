@@ -2,7 +2,7 @@
     import type { PageData } from "./$types";
     import { resolve } from "$app/paths";
 
-    let { data }: { data: PageData } = $props();
+    let { data, form }: { data: PageData; form?: { success?: string; error?: string } } = $props();
     const scales = $derived(data.scales ?? []);
     const scaleCount = $derived(scales.length);
     const equivalenceCount = $derived(
@@ -11,6 +11,36 @@
     const countryCount = $derived(
         new Set(scales.map((scale) => scale.country_name).filter(Boolean)).size
     );
+
+    let selectedScaleIds = $state<number[]>([]);
+    let selectedEquivalenceIds = $state<string[]>([]);
+    const selectedScaleCount = $derived(selectedScaleIds.length);
+    const selectedEquivalenceCount = $derived(selectedEquivalenceIds.length);
+    const totalSelected = $derived(selectedScaleCount + selectedEquivalenceCount);
+
+    function confirmDelete(event: SubmitEvent, message: string) {
+        if (!confirm(message)) {
+            event.preventDefault();
+        }
+    }
+
+    function confirmBulkDelete(event: SubmitEvent) {
+        if (totalSelected === 0) {
+            event.preventDefault();
+            return;
+        }
+        const parts = [];
+        if (selectedScaleCount > 0) {
+            parts.push(`${selectedScaleCount} scale${selectedScaleCount === 1 ? "" : "s"}`);
+        }
+        if (selectedEquivalenceCount > 0) {
+            parts.push(`${selectedEquivalenceCount} equivalence${selectedEquivalenceCount === 1 ? "" : "s"}`);
+        }
+        const message = 'Delete ${parts.join(" and ")}?';
+        if (!confirm(message)) {
+            event.preventDefault();
+        }
+    }
 </script>
 
 <section class="page-hero">
@@ -52,6 +82,32 @@
         </div>
     </section>
 {:else}
+    {#if form?.error}
+        <div class="form-errors">{form.error}</div>
+    {/if}
+    {#if form?.success}
+        <div class="success-banner">{form.success}</div>
+    {/if}
+
+    <form
+        id="bulk-delete-form"
+        method="POST"
+        action="?/bulkDelete"
+        class="bulk-bar"
+        onsubmit={confirmBulkDelete}>
+        <div>
+            <strong>Bulk delete</strong>
+            <p class="muted">Select scales or equivalences below to delete them in one action.</p>
+        </div>
+        <div class="bulk-meta">
+            <span>{selectedScaleCount} scale{selectedScaleCount === 1 ? "" : "s"}</span>
+            <span>{selectedEquivalenceCount} equivalence{selectedEquivalenceCount === 1 ? "" : "s"}</span>
+        </div>
+        <button type="submit" class="btn-danger" disabled={totalSelected === 0}>
+            Delete selected
+        </button>
+    </form>
+
     <div class="scale-grid">
         {#each scales as scale (scale.id)}
             <article class="card scale-card">
@@ -67,11 +123,34 @@
                         <span class="tag">{scale.equivalences?.length ?? 0} equivalences</span>
                     </div>
                     <div class="row-actions">
+                        <label class="select-pill">
+                            <input
+                                type="checkbox"
+                                name="scale_ids"
+                                value={scale.id}
+                                form="bulk-delete-form"
+                                bind:group={selectedScaleIds}
+                                aria-label={`Select ${scale.country_name} scale`} />
+                            <span>Select scale</span>
+                        </label>
+                        <a href={resolve('/scales/${scale.id}')} class="btn-tertiary">View details</a>
                         <a
                             href={resolve(`/scales/${scale.id}/equivalences/new`)}
                             class="btn-tertiary">
                             Add equivalence
                         </a>
+                        <form
+                            method="POST"
+                            action="?/deleteScale"
+                            onsubmit={(event) =>
+                                confirmDelete(
+                                    event,
+                                    'Delete ${scale.country_name} scale? This removes all associated equivalences.'
+                                )
+                            }>
+                            <input type="hidden" name="scale_id" value={scale.id} />
+                            <button type="submit" class="btn-danger">Delete scale</button>
+                        </form>
                     </div>
                 </header>
 
@@ -84,6 +163,8 @@
                                     <th>Spanish 1-4</th>
                                     <th>Spanish 5-10</th>
                                     <th>Literal</th>
+                                    <th class="select-col">Select</th>
+                                    <th class="action-col">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -93,6 +174,30 @@
                                         <td>{equivalence.spanish_1_4 ?? "-"}</td>
                                         <td>{equivalence.spanish_5_10 ?? "-"}</td>
                                         <td>{equivalence.spanish_literal ?? "-"}</td>
+                                        <td class="select-col">
+                                            <input
+                                                type="checkbox"
+                                                name="equivalence_ids"
+                                                value={`${scale.id}:${equivalence.id}`}
+                                                form="bulk-delete-form"
+                                                bind:group={selectedEquivalenceIds}
+                                                aria-label={`Select ${equivalence.origin_grade} equivalence`} />
+                                        </td>
+                                        <td class="action-col">
+                                            <form
+                                                method="POST"
+                                                action="?/deleteEquivalence"
+                                                onsubmit={(event) =>
+                                                    confirmDelete(
+                                                        event,
+                                                        `Delete ${equivalence.origin_grade} equivalence from ${scale.country_name}?`
+                                                    )
+                                                }>
+                                                <input type="hidden" name="scale_id" value={scale.id} />
+                                                <input type="hidden" name="equivalence_id" value={equivalence.id} />
+                                                <button type="submit" class="btn-danger btn-small">Delete</button>
+                                            </form>
+                                        </td>
                                     </tr>
                                 {/each}
                             </tbody>

@@ -514,6 +514,42 @@ textarea:focus {
 	gap: 0.6rem;
 }
 
+.bulk-bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 1rem 1.2rem;
+	border-radius: var(--radius-md);
+	border: 1px solid var(--border);
+	background: var(--surface);
+	margin-bottom: 1.6rem;
+}
+
+.bulk-meta {
+	display: flex;
+	gap: 1rem;
+	flex-wrap: wrap;
+	color: var(--muted);
+	font-size: 0.9rem;
+}
+
+.select-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.35rem 0.7rem;
+	border-radius: 999px;
+	border: 1px solid var(--border);
+	background: var(--surface);
+	font-size: 0.85rem;
+}
+
+.select-pill input {
+	accent-color: var(--accent);
+}
+
 .btn-tertiary {
 	padding: 0.5rem 0.9rem;
 	border-radius: 999px;
@@ -531,6 +567,17 @@ textarea:focus {
 	color: var(--danger);
 	font-weight: 600;
 	cursor: pointer;
+}
+
+.btn-small {
+	padding: 0.35rem 0.7rem;
+	font-size: 0.85rem;
+}
+
+.select-col,
+.action-col {
+	width: 1%;
+	white-space: nowrap;
 }
 
 .muted {
