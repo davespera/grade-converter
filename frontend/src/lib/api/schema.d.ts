@@ -199,6 +199,11 @@ export interface components {
          */
         SpanishLiteralEnum: "APROBADO" | "NOTABLE" | "SOBRESALIENTE" | "MATRICULA";
         /**
+         * TransferFormat
+         * @enum {string}
+         */
+        TransferFormat: "json" | "csv" | "xlsx" | "ods" | "json-file";
+        /**
          * TransferRequest
          * @description Schema for the transfer request
          */
@@ -434,7 +439,12 @@ export interface operations {
     };
     convert_grade: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Response format for converted grades */
+                format?: components["schemas"]["TransferFormat"];
+                /** @description Optional filename for file responses */
+                filename?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
