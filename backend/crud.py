@@ -37,6 +37,15 @@ async def create_scale(db: AsyncSession, scale: models.AcademicScaleCreate):
     # Ensures relationships are loaded for the response model due to async
     return await get_scale(db, new_scale.id)
 
+async def delete_scale(db: AsyncSession, scale_id: int) -> bool:
+    """Delete an existing scale."""
+    scale = await db.get(models.AcademicScale, scale_id)
+    if not scale:
+        return False
+    await db.delete(scale)
+    await db.commit()
+    return True
+
 # --- Grade Equivalence Operations ---
 
 async def create_grade_equivalence(
@@ -58,3 +67,12 @@ async def get_grade_equivalence(db: AsyncSession, scale_id: int, origin_grade: s
     )
     result = await db.exec(query)
     return result.first()
+
+async def delete_equivalence(db: AsyncSession, scale_id: int, equivalence_id: int) -> bool:
+    """Delete a specific grade mapping in an existing scale."""
+    equivalence = await db.get(models.GradeEquivalence, equivalence_id)
+    if not equivalence or equivalence.scale_id != scale_id:
+        return False
+    await db.delete(equivalence)
+    await db.commit()
+    return True
