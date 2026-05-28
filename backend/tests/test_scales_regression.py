@@ -255,3 +255,57 @@ def test_create_equivalence_for_scale_returns_created_equivalence() -> None:
         if client is not None:
             client.close()
         asyncio.run(_teardown_schema())
+
+
+def test_delete_equivalence_for_scale_removes_equivalence() -> None:
+    asyncio.run(_setup_schema_and_seed())
+
+    app = FastAPI()
+    app.include_router(scales.router)
+    app.dependency_overrides[database.get_database_session] = _override_db_session
+
+    client = None
+    try:
+        client = TestClient(app)
+
+        # Delete the existing equivalence (seed creates equivalence with id 1)
+        response = client.delete("/scales/1/equivalences/1")
+        assert response.status_code == 200
+
+        # Verify equivalence is no longer present on the scale
+        response = client.get("/scales/1")
+        assert response.status_code == 200
+        payload = response.json()
+        assert isinstance(payload["equivalences"], list)
+        assert payload["equivalences"] == []
+    finally:
+        app.dependency_overrides.clear()
+        if client is not None:
+            client.close()
+        asyncio.run(_teardown_schema())
+
+
+def test_delete_scale_removes_scale_and_equivalences() -> None:
+    asyncio.run(_setup_schema_and_seed())
+
+    app = FastAPI()
+    app.include_router(scales.router)
+    app.dependency_overrides[database.get_database_session] = _override_db_session
+
+    client = None
+    try:
+        client = TestClient(app)
+
+        # Delete the scale
+        response = client.delete("/scales/1")
+        assert response.status_code == 200
+
+        # The scale should no longer be retrievable
+        response = client.get("/scales/1")
+        assert response.status_code == 404
+        assert response.json()["detail"] == "Scale not found"
+    finally:
+        app.dependency_overrides.clear()
+        if client is not None:
+            client.close()
+        asyncio.run(_teardown_schema())
