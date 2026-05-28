@@ -91,14 +91,15 @@ class AcademicScale(AcademicScaleBase, table=True):
         back_populates="scale",
         # Use eager, in this case selectin, loading to avoid errors with async sessions
         # Better to do 2 queries, as for a single scale there might be several equivalences
-        sa_relationship_kwargs={"lazy": "selectin"}, 
+        # "passive_deletes": "all" to let the DB handle the CASCADE delete
+        sa_relationship_kwargs={"lazy": "selectin", "passive_deletes": "all"}, 
     )
 
 class GradeEquivalence(GradeEquivalenceBase, table=True):
     __tablename__ = "grade_equivalences"
 
     id: int | None = Field(default=None, primary_key=True, index=True)
-    scale_id: int | None = Field(default=None, foreign_key="academic_scales.id")
+    scale_id: int | None = Field(default=None, foreign_key="academic_scales.id", ondelete="CASCADE")
 
     scale: AcademicScale | None = Relationship(
         back_populates="equivalences",
