@@ -33,7 +33,8 @@ export interface paths {
         get: operations["read_scale"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete Grade Equivalence */
+        delete: operations["delete_scale"];
         options?: never;
         head?: never;
         patch?: never;
@@ -51,6 +52,23 @@ export interface paths {
         /** Create Equivalence For Scale */
         post: operations["create_equivalence_for_scale"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/scales/{scale_id}/equivalences/{equivalence_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Grade Equivalence */
+        delete: operations["delete_equivalence_for_scale"];
         options?: never;
         head?: never;
         patch?: never;
@@ -316,6 +334,37 @@ export interface operations {
             };
         };
     };
+    delete_scale: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scale_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     create_equivalence_for_scale: {
         parameters: {
             query?: never;
@@ -338,6 +387,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GradeEquivalenceRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_equivalence_for_scale: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scale_id: number;
+                equivalence_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
