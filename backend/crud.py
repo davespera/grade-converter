@@ -7,14 +7,8 @@ from . import models
 
 async def get_scale(db: AsyncSession, scale_id: int):
     """Fetch a specific scale and its nested equivalences."""
-    query = (
-        select(models.AcademicScale)
-        #.options(selectinload(models.AcademicScale.equivalences))
-        .where(models.AcademicScale.id == scale_id)
-    )
-
-    result = await db.exec(query)
-    return result.first()
+    scale = await db.get(models.AcademicScale, scale_id)
+    return scale
 
 async def get_scales(db: AsyncSession, skip: int = 0, limit: int = 100):
     """Fetch all available scales for the administrative list view using pagination."""
@@ -30,12 +24,12 @@ async def get_scales(db: AsyncSession, skip: int = 0, limit: int = 100):
 
 async def create_scale(db: AsyncSession, scale: models.AcademicScaleCreate):
     """Register a new country scale."""
-    new_scale = models.AcademicScale(**scale.model_dump())
-    db.add(new_scale)
+    db_scale = models.AcademicScale.model_validate(scale)
+    db.add(db_scale)
     await db.commit()
-    await db.refresh(new_scale)
+    await db.refresh(db_scale)
     # Ensures relationships are loaded for the response model due to async
-    return await get_scale(db, new_scale.id)
+    return await get_scale(db, db_scale.id)
 
 async def delete_scale(db: AsyncSession, scale_id: int) -> bool:
     """Delete an existing scale."""
