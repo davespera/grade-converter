@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base
 from .routers import scales, transfer
 from .auth import handle_api_key  
+import os
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,9 +35,9 @@ app = FastAPI(
 # CORS Configuration
 # Essential for allowing your Web Interface (Frontend) to make requests to this API
 origins = [
-    "http://localhost:3000",  # Common for React/Next.js
-    "http://localhost:5173",  # Common for Vite/Vue
-    # Add your production domain here later
+    
+    os.getenv("FRONTEND_URL")
+
 ]
 
 app.add_middleware(
