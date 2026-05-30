@@ -6,3 +6,6 @@ pydantic>=2.7.0
 asyncpg
 pytest
 aiosqlite
+openpyxl
+odfpy
+pandas
