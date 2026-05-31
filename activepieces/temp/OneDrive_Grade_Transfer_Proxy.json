@@ -1,0 +1,115 @@
+﻿{
+  "name": "Grade Transfer Proxy",
+  "type": "SHARED",
+  "summary": "",
+  "description": "",
+  "tags": [],
+  "blogUrl": "",
+  "metadata": {
+    "externalId": "KFmiB96M6Mx0FFwgbA6YV"
+  },
+  "author": "D E",
+  "categories": [],
+  "pieces": [
+    "@activepieces/piece-microsoft-onedrive"
+  ],
+  "flows": [
+    {
+      "displayName": "Grade Transfer Proxy",
+      "trigger": {
+        "name": "trigger",
+        "valid": true,
+        "displayName": "New File",
+        "nextAction": {
+          "name": "step_1",
+          "type": "CODE",
+          "valid": true,
+          "settings": {
+            "input": {
+              "grades": "{{trigger.body.grades}}",
+              "scale_id": "{{trigger.body.scale_id}}"
+            },
+            "sampleData": {},
+            "sourceCode": {
+              "code": "export const code = async (inputs) => {\n  // grades should be an array of {subject, origin_grade} objects\n  const response = await fetch('http://backend:8000/transfer/?format=xlsx', {\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n      'x-api-key': process.env.FASTAPI_ACTIVEPIECES_API_KEY || '',\n    },\n    body: JSON.stringify({\n      scale_id: Number(inputs.scale_id),\n      grades: inputs.grades,\n    }),\n  });\n\n  const blob = await response.blob();\n  \n  // Convert blob to base64 for ActivePieces (if needed)\n  const arrayBuffer = await blob.arrayBuffer();\n  const base64 = Buffer.from(arrayBuffer).toString('base64');\n\n  return {\n    status: response.status,\n    file: base64,\n    contentType: response.headers.get('content-type'),\n  };\n};",
+              "packageJson": "{}"
+            },
+            "errorHandlingOptions": {
+              "retryOnFailure": {
+                "value": false
+              },
+              "continueOnFailure": {
+                "value": false
+              }
+            }
+          },
+          "nextAction": {
+            "name": "step_2",
+            "type": "PIECE",
+            "valid": true,
+            "settings": {
+              "input": {
+                "auth": "{{connections['vVgTAa6E9jrjIM6DzvO8t']}}",
+                "file": "{{step_1.file}}",
+                "fileName": "grades.xlsx",
+                "parentId": null
+              },
+              "pieceName": "@activepieces/piece-microsoft-onedrive",
+              "actionName": "upload_onedrive_file",
+              "pieceVersion": "0.3.2",
+              "propertySettings": {
+                "file": {
+                  "type": "MANUAL"
+                },
+                "fileName": {
+                  "type": "MANUAL"
+                },
+                "markdown": {
+                  "type": "MANUAL"
+                },
+                "parentId": {
+                  "type": "MANUAL"
+                }
+              },
+              "errorHandlingOptions": {
+                "retryOnFailure": {
+                  "value": false
+                },
+                "continueOnFailure": {
+                  "value": false
+                }
+              }
+            },
+            "displayName": "Upload file",
+            "lastUpdatedDate": "2026-05-31T17:16:41.791Z"
+          },
+          "displayName": "Call Backend",
+          "lastUpdatedDate": "2026-05-31T17:16:11.293Z"
+        },
+        "lastUpdatedDate": "2026-05-31T17:16:11.292Z",
+        "type": "PIECE_TRIGGER",
+        "settings": {
+          "propertySettings": {
+            "markdown": {
+              "type": "MANUAL"
+            },
+            "parentFolder": {
+              "type": "MANUAL"
+            }
+          },
+          "pieceName": "@activepieces/piece-microsoft-onedrive",
+          "pieceVersion": "0.3.2",
+          "triggerName": "new_file",
+          "input": {
+            "auth": "{{connections['vVgTAa6E9jrjIM6DzvO8t']}}",
+            "parentFolder": "376F938359CA0166!sd69ce8551e17405bba09737d61ec3eda"
+          }
+        }
+      },
+      "valid": true,
+      "schemaVersion": "20",
+      "notes": []
+    }
+  ],
+  "status": "PUBLISHED"
+}
