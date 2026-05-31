@@ -1,0 +1,109 @@
+{
+  "name": "Grade Transfer Proxy",
+  "type": "SHARED",
+  "summary": "",
+  "description": "",
+  "tags": [],
+  "blogUrl": "",
+  "metadata": {
+    "externalId": "132lmHcyyxzlkEuqY5fDS"
+  },
+  "author": "D E",
+  "categories": [],
+  "pieces": [
+    "@activepieces/piece-microsoft-onedrive"
+  ],
+  "flows": [
+    {
+      "displayName": "Grade Transfer Proxy",
+      "trigger": {
+        "name": "trigger",
+        "valid": true,
+        "displayName": "New File in OneDrive",
+        "nextAction": {
+          "name": "step_1",
+          "type": "CODE",
+          "valid": true,
+          "settings": {
+            "input": {
+              "grades": "{{trigger.grades}}",
+              "scale_id": "{{trigger.scale_id}}"
+            },
+            "sampleData": {},
+            "sourceCode": {
+              "code": "export const code = async (inputs) => {\n  const response = await fetch('http://backend:8000/transfer/?format=xlsx', {\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n      'x-api-key': process.env.FASTAPI_ACTIVEPIECES_API_KEY || '',\n    },\n    body: JSON.stringify({\n      scale_id: Number(inputs.scale_id),\n      grades: inputs.grades,\n    }),\n  });\n\n  const arrayBuffer = await response.arrayBuffer();\n  const base64 = Buffer.from(arrayBuffer).toString('base64');\n\n  return {\n    status: response.status,\n    file: base64,\n    contentType: response.headers.get('content-type'),\n  };\n};",
+              "packageJson": "{}"
+            },
+            "errorHandlingOptions": {
+              "retryOnFailure": {
+                "value": false
+              },
+              "continueOnFailure": {
+                "value": false
+              }
+            }
+          },
+          "nextAction": {
+            "name": "step_2",
+            "type": "PIECE",
+            "valid": true,
+            "skip": false,
+            "displayName": "Upload Result to OneDrive",
+            "lastUpdatedDate": "2026-05-31T00:00:00.000Z",
+            "settings": {
+              "pieceName": "@activepieces/piece-microsoft-onedrive",
+              "pieceVersion": "~0.3.0",
+              "actionName": "upload_onedrive_file",
+              "input": {
+                "file": "{{step_1.file}}",
+                "fileName": "transfer-result.xlsx",
+                "parentFolder": ""
+              },
+              "propertySettings": {
+                "file": {
+                  "type": "MANUAL"
+                },
+                "fileName": {
+                  "type": "MANUAL"
+                },
+                "parentFolder": {
+                  "type": "MANUAL"
+                }
+              },
+              "sampleData": {},
+              "errorHandlingOptions": {
+                "retryOnFailure": {
+                  "value": false
+                },
+                "continueOnFailure": {
+                  "value": false
+                }
+              }
+            }
+          },
+          "displayName": "Call Backend",
+          "lastUpdatedDate": "2026-05-31T17:53:35.011Z"
+        },
+        "lastUpdatedDate": "2026-05-31T17:52:50.113Z",
+        "type": "PIECE_TRIGGER",
+        "settings": {
+          "pieceName": "@activepieces/piece-microsoft-onedrive",
+          "pieceVersion": "~0.3.0",
+          "triggerName": "new_file",
+          "input": {
+            "parentFolder": ""
+          },
+          "propertySettings": {
+            "parentFolder": {
+              "type": "MANUAL"
+            }
+          }
+        }
+      },
+      "valid": true,
+      "schemaVersion": "20",
+      "notes": []
+    }
+  ],
+  "status": "PUBLISHED"
+}
