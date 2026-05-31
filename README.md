@@ -68,3 +68,4 @@ docker compose --env-file .env.shared --env-file .env up -d --build
 
 - The backend runs on FastAPI and uses PostgreSQL.
 - The frontend is built with SvelteKit and served with the Node adapter.
+- Some parameters of the demo Activepieces workflows need to be configured manually (e.g., secrets, Microsoft connections, etc.)
