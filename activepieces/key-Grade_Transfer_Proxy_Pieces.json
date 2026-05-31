@@ -1,0 +1,310 @@
+﻿{
+  "name": "Grade Transfer Pieces",
+  "type": "SHARED",
+  "summary": "",
+  "description": "",
+  "tags": [],
+  "blogUrl": "",
+  "metadata": {
+    "externalId": "OnrNq8Yk0SWLDTkpxNijq"
+  },
+  "author": "D E",
+  "categories": [],
+  "pieces": [
+    "@activepieces/piece-webhook",
+    "@activepieces/piece-http"
+  ],
+  "flows": [
+    {
+      "displayName": "Grade Transfer Pieces",
+      "trigger": {
+        "name": "trigger",
+        "valid": true,
+        "displayName": "Catch Webhook",
+        "nextAction": {
+          "name": "step_1",
+          "skip": false,
+          "type": "PIECE",
+          "valid": true,
+          "settings": {
+            "input": {
+              "url": "http://backend:8000/transfer/",
+              "body": {
+                "data": "{\n  \"scale_id\": {{trigger.body.scale_id}},\n  \"grades\": {{trigger.body.grades}}\n}"
+              },
+              "method": "POST",
+              "headers": {
+                "Content-Type": "application/json",
+                "x-api-key": "{{FASTAPI_ACTIVEPIECES_API_KEY}}"
+              },
+              "authType": "NONE",
+              "body_type": "json",
+              "use_proxy": false,
+              "authFields": {},
+              "failureMode": "continue_all",
+              "queryParams": {},
+              "proxy_settings": {},
+              "followRedirects": false,
+              "response_is_binary": false
+            },
+            "pieceName": "@activepieces/piece-http",
+            "actionName": "send_request",
+            "sampleData": {},
+            "pieceVersion": "0.11.9",
+            "propertySettings": {
+              "url": {
+                "type": "MANUAL"
+              },
+              "body": {
+                "type": "MANUAL",
+                "schema": {
+                  "data": {
+                    "type": "JSON",
+                    "required": true,
+                    "displayName": "JSON Body"
+                  }
+                }
+              },
+              "method": {
+                "type": "MANUAL"
+              },
+              "headers": {
+                "type": "MANUAL"
+              },
+              "timeout": {
+                "type": "MANUAL"
+              },
+              "authType": {
+                "type": "MANUAL"
+              },
+              "body_type": {
+                "type": "MANUAL"
+              },
+              "use_proxy": {
+                "type": "MANUAL"
+              },
+              "authFields": {
+                "type": "MANUAL",
+                "schema": {}
+              },
+              "failureMode": {
+                "type": "MANUAL"
+              },
+              "queryParams": {
+                "type": "MANUAL"
+              },
+              "proxy_settings": {
+                "type": "MANUAL",
+                "schema": {}
+              },
+              "followRedirects": {
+                "type": "MANUAL"
+              },
+              "response_is_binary": {
+                "type": "MANUAL"
+              }
+            },
+            "errorHandlingOptions": {
+              "retryOnFailure": {
+                "value": false
+              },
+              "continueOnFailure": {
+                "value": false
+              }
+            }
+          },
+          "nextAction": {
+            "name": "step_3",
+            "skip": false,
+            "type": "ROUTER",
+            "valid": true,
+            "children": [
+              {
+                "name": "step_2",
+                "skip": false,
+                "type": "PIECE",
+                "valid": true,
+                "settings": {
+                  "input": {
+                    "fields": {
+                      "body": "{{step_1.body}}",
+                      "status": 200,
+                      "headers": {}
+                    },
+                    "respond": "stop",
+                    "responseType": "json"
+                  },
+                  "pieceName": "@activepieces/piece-webhook",
+                  "actionName": "return_response",
+                  "sampleData": {},
+                  "pieceVersion": "0.1.33",
+                  "propertySettings": {
+                    "fields": {
+                      "type": "MANUAL",
+                      "schema": {
+                        "body": {
+                          "type": "JSON",
+                          "required": true,
+                          "displayName": "JSON Body"
+                        },
+                        "status": {
+                          "type": "NUMBER",
+                          "required": false,
+                          "displayName": "Status",
+                          "defaultValue": 200
+                        },
+                        "headers": {
+                          "type": "OBJECT",
+                          "required": false,
+                          "displayName": "Headers"
+                        }
+                      }
+                    },
+                    "respond": {
+                      "type": "MANUAL"
+                    },
+                    "responseType": {
+                      "type": "MANUAL"
+                    }
+                  },
+                  "errorHandlingOptions": {
+                    "retryOnFailure": {
+                      "value": false
+                    },
+                    "continueOnFailure": {
+                      "value": false
+                    }
+                  }
+                },
+                "displayName": "Return Response",
+                "lastUpdatedDate": "2026-05-02T16:50:32.092Z"
+              },
+              {
+                "name": "step_4",
+                "skip": false,
+                "type": "PIECE",
+                "valid": true,
+                "settings": {
+                  "input": {
+                    "fields": {
+                      "body": {
+                        "detail": "{{step_1.body.detail}}"
+                      },
+                      "status": "{{step_1.status}}",
+                      "headers": {}
+                    },
+                    "respond": "stop",
+                    "responseType": "json"
+                  },
+                  "pieceName": "@activepieces/piece-webhook",
+                  "actionName": "return_response",
+                  "sampleData": {},
+                  "pieceVersion": "0.1.33",
+                  "propertySettings": {
+                    "fields": {
+                      "type": "MANUAL",
+                      "schema": {
+                        "body": {
+                          "type": "JSON",
+                          "required": true,
+                          "displayName": "JSON Body"
+                        },
+                        "status": {
+                          "type": "NUMBER",
+                          "required": false,
+                          "displayName": "Status",
+                          "defaultValue": 200
+                        },
+                        "headers": {
+                          "type": "OBJECT",
+                          "required": false,
+                          "displayName": "Headers"
+                        }
+                      }
+                    },
+                    "respond": {
+                      "type": "MANUAL"
+                    },
+                    "responseType": {
+                      "type": "MANUAL"
+                    }
+                  },
+                  "errorHandlingOptions": {
+                    "retryOnFailure": {
+                      "value": false
+                    },
+                    "continueOnFailure": {
+                      "value": false
+                    }
+                  }
+                },
+                "displayName": "Return Response",
+                "lastUpdatedDate": "2026-05-02T16:50:32.092Z"
+              }
+            ],
+            "settings": {
+              "branches": [
+                {
+                  "branchName": "Branch 1",
+                  "branchType": "CONDITION",
+                  "conditions": [
+                    [
+                      {
+                        "operator": "NUMBER_IS_EQUAL_TO",
+                        "firstValue": "{{step_1.status}}",
+                        "secondValue": "200"
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "branchName": "Otherwise",
+                  "branchType": "FALLBACK"
+                }
+              ],
+              "sampleData": {},
+              "executionType": "EXECUTE_FIRST_MATCH"
+            },
+            "displayName": "Router",
+            "lastUpdatedDate": "2026-05-02T16:50:32.091Z"
+          },
+          "displayName": "Send HTTP request",
+          "lastUpdatedDate": "2026-05-02T16:50:32.121Z"
+        },
+        "lastUpdatedDate": "2026-05-02T16:50:32.090Z",
+        "type": "PIECE_TRIGGER",
+        "settings": {
+          "propertySettings": {
+            "authType": {
+              "type": "MANUAL"
+            },
+            "authFields": {
+              "type": "MANUAL",
+              "schema": {}
+            },
+            "liveMarkdown": {
+              "type": "MANUAL"
+            },
+            "syncMarkdown": {
+              "type": "MANUAL"
+            },
+            "testMarkdown": {
+              "type": "MANUAL"
+            }
+          },
+          "pieceName": "@activepieces/piece-webhook",
+          "pieceVersion": "0.1.33",
+          "triggerName": "catch_webhook",
+          "input": {
+            "authType": "none",
+            "authFields": {}
+          }
+        }
+      },
+      "valid": true,
+      "schemaVersion": "20",
+      "notes": []
+    }
+  ],
+  "status": "PUBLISHED"
+}

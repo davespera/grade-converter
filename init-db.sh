@@ -78,17 +78,8 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     (5, 'GE', 5.00, 1, 'APROBADO'),
     (5, 'SG', 9.00, 3, 'SOBRESALIENTE');
 
-    INSERT INTO api_users (name, active, api_key, is_internal)
-    VALUES ('activepieces', TRUE, '${FASTAPI_ACTIVEPIECES_API_KEY}', TRUE)
-    ON CONFLICT (api_key) DO UPDATE
-    SET
-      name = EXCLUDED.name,
-      active = EXCLUDED.active,
-      is_internal = EXCLUDED.is_internal;
-
     -- Reset sequences after inserting explicit primary key values to prevent duplicate key errors
     SELECT setval('academic_scales_id_seq', COALESCE((SELECT MAX(id)+1 FROM academic_scales), 1), false);
     SELECT setval('grade_equivalences_id_seq', COALESCE((SELECT MAX(id)+1 FROM grade_equivalences), 1), false);
-    SELECT setval('api_users_id_seq', COALESCE((SELECT MAX(id)+1 FROM api_users), 1), false);
     
 EOSQL

@@ -15,6 +15,9 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 # Prevent import-time failures in backend.database when running tests outside Docker.
 os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///./_placeholder_test.db")
+os.environ.setdefault("FASTAPI_ACTIVEPIECES_API_KEY", "test-activepieces-key")
+
+AUTH_HEADERS = {"x-api-key": os.environ["FASTAPI_ACTIVEPIECES_API_KEY"]}
 
 from backend import database, models
 from backend.database import Base
@@ -95,6 +98,7 @@ def test_convert_grade_returns_expected_conversion() -> None:
         response = client.post(
             "/transfer",
             json={"scale_id": 1, "grades": [{"origin_grade": "A"}]},
+            headers=AUTH_HEADERS,
         )
         payload = response.json()
 
@@ -126,6 +130,7 @@ def test_convert_grade_returns_404_for_missing_scale() -> None:
         response = client.post(
             "/transfer",
             json={"scale_id": 999, "grades": [{"origin_grade": "A"}]},
+            headers=AUTH_HEADERS,
         )
 
         assert response.status_code == 404
@@ -150,6 +155,7 @@ def test_convert_grade_returns_404_for_missing_equivalence() -> None:
         response = client.post(
             "/transfer",
             json={"scale_id": 1, "grades": [{"origin_grade": "A"}]},
+            headers=AUTH_HEADERS,
         )
 
         assert response.status_code == 404
@@ -180,6 +186,7 @@ def test_convert_grade_returns_multiple_conversions_with_subjects() -> None:
                     {"origin_grade": "B"},
                 ],
             },
+            headers=AUTH_HEADERS,
         )
         payload = response.json()
 
@@ -212,7 +219,7 @@ def test_convert_grade_returns_csv_file() -> None:
         response = client.post(
             "/transfer?filename=grades",
             json={"scale_id": 1, "grades": [{"origin_grade": "A"}]},
-            headers={"accept": "text/csv"},
+            headers={**AUTH_HEADERS, "accept": "text/csv"},
         )
 
         assert response.status_code == 200
@@ -242,7 +249,7 @@ def test_convert_grade_defaults_to_json_when_accept_not_matched() -> None:
         response = client.post(
             "/transfer",
             json={"scale_id": 1, "grades": [{"origin_grade": "A"}]},
-            headers={"accept": "*/*"},
+            headers={**AUTH_HEADERS, "accept": "*/*"},
         )
 
         assert response.status_code == 200
@@ -271,7 +278,7 @@ def test_convert_grade_query_param_overrides_accept_header() -> None:
         response = client.post(
             "/transfer?format=xlsx&filename=grades",
             json={"scale_id": 1, "grades": [{"origin_grade": "A"}]},
-            headers={"accept": "text/csv"},
+            headers={**AUTH_HEADERS, "accept": "text/csv"},
         )
 
         assert response.status_code == 200
@@ -305,7 +312,10 @@ def test_convert_grade_returns_xlsx_file() -> None:
         response = client.post(
             "/transfer?filename=grades",
             json={"scale_id": 1, "grades": [{"origin_grade": "A"}]},
-            headers={"accept": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},
+            headers={
+                **AUTH_HEADERS,
+                "accept": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            },
         )
 
         assert response.status_code == 200
@@ -341,7 +351,10 @@ def test_convert_grade_returns_ods_file() -> None:
         response = client.post(
             "/transfer?filename=grades",
             json={"scale_id": 1, "grades": [{"origin_grade": "A"}]},
-            headers={"accept": "application/vnd.oasis.opendocument.spreadsheet"},
+            headers={
+                **AUTH_HEADERS,
+                "accept": "application/vnd.oasis.opendocument.spreadsheet",
+            },
         )
 
         assert response.status_code == 200

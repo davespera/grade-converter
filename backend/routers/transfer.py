@@ -14,6 +14,7 @@ import os
 router = APIRouter(
     prefix="/transfer",
     tags=["Transfer Logic"],
+    dependencies=[Depends(handle_api_key)],
 )
 
 
