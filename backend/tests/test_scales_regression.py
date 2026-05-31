@@ -309,3 +309,64 @@ def test_delete_scale_removes_scale_and_equivalences() -> None:
         if client is not None:
             client.close()
         asyncio.run(_teardown_schema())
+
+
+def test_update_scale_patches_fields_and_keeps_equivalences_regression() -> None:
+    asyncio.run(_setup_schema_and_seed())
+
+    app = FastAPI()
+    app.include_router(scales.router)
+    app.dependency_overrides[database.get_database_session] = _override_db_session
+
+    client = None
+    try:
+        client = TestClient(app)
+
+        response = client.patch(
+            "/scales/1",
+            json={"scale_description": "Updated A-F", "total_grades": 7},
+        )
+        payload = response.json()
+
+        assert response.status_code == 200
+        assert payload["id"] == 1
+        assert payload["scale_description"] == "Updated A-F"
+        assert payload["total_grades"] == 7
+        assert isinstance(payload["equivalences"], list)
+        assert len(payload["equivalences"]) == 1
+        assert payload["equivalences"][0]["origin_grade"] == "A"
+    finally:
+        app.dependency_overrides.clear()
+        if client is not None:
+            client.close()
+        asyncio.run(_teardown_schema())
+
+
+def test_update_equivalence_changes_values_regression() -> None:
+    asyncio.run(_setup_schema_and_seed())
+
+    app = FastAPI()
+    app.include_router(scales.router)
+    app.dependency_overrides[database.get_database_session] = _override_db_session
+
+    client = None
+    try:
+        client = TestClient(app)
+
+        # Update the existing equivalence created by the seed (id 1)
+        response = client.patch(
+            "/scales/1/equivalences/1",
+            json={"spanish_5_10": 9.50, "spanish_literal": "APROBADO"},
+        )
+        payload = response.json()
+
+        assert response.status_code == 200
+        assert payload["id"] == 1
+        assert payload["scale_id"] == 1
+        assert payload["spanish_5_10"] == "9.50"
+        assert payload["spanish_literal"] == "APROBADO"
+    finally:
+        app.dependency_overrides.clear()
+        if client is not None:
+            client.close()
+        asyncio.run(_teardown_schema())

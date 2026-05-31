@@ -133,7 +133,7 @@
                                 aria-label={`Select ${scale.country_name} scale`} />
                             <span>Select scale</span>
                         </label>
-                        <a href={resolve('/scales/${scale.id}')} class="btn-tertiary">View details</a>
+                        <a href={resolve(`/scales/${scale.id}`)} class="btn-tertiary">View details</a>
                         <a
                             href={resolve(`/scales/${scale.id}/equivalences/new`)}
                             class="btn-tertiary">

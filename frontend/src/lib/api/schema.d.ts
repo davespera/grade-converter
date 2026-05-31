@@ -33,11 +33,12 @@ export interface paths {
         get: operations["read_scale"];
         put?: never;
         post?: never;
-        /** Delete Grade Equivalence */
+        /** Delete Scale */
         delete: operations["delete_scale"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update Scale */
+        patch: operations["update_scale"];
         trace?: never;
     };
     "/scales/{scale_id}/equivalences/": {
@@ -71,7 +72,8 @@ export interface paths {
         delete: operations["delete_equivalence_for_scale"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update Equivalence */
+        patch: operations["update_equivalence"];
         trace?: never;
     };
     "/transfer/": {
@@ -134,6 +136,15 @@ export interface components {
             /** Equivalences */
             equivalences?: components["schemas"]["GradeEquivalenceRead"][];
         };
+        /** AcademicScaleUpdate */
+        AcademicScaleUpdate: {
+            /** Country Name */
+            country_name?: string | null;
+            /** Scale Description */
+            scale_description?: string | null;
+            /** Total Grades */
+            total_grades?: number | null;
+        };
         /** GradeEquivalenceCreate */
         GradeEquivalenceCreate: {
             /**
@@ -164,6 +175,19 @@ export interface components {
             /** Scale Id */
             scale_id: number;
         };
+        /** GradeEquivalenceUpdate */
+        GradeEquivalenceUpdate: {
+            /**
+             * Origin Grade
+             * @description Grade from origin country
+             */
+            origin_grade?: string;
+            /** Spanish 5 10 */
+            spanish_5_10?: number | string;
+            /** Spanish 1 4 */
+            spanish_1_4?: number | null;
+            spanish_literal?: components["schemas"]["SpanishLiteralEnum"] | null;
+        };
         /**
          * GradeInput
          * @description Schema for the grade to be converted
@@ -185,6 +209,8 @@ export interface components {
             origin_grade: string;
             /** Converted 5 10 */
             converted_5_10: string;
+            /** Spanish 1 4 */
+            spanish_1_4?: number | null;
             /** Converted Literal */
             converted_literal: string;
         };
@@ -194,15 +220,15 @@ export interface components {
             detail?: components["schemas"]["ValidationError"][];
         };
         /**
+         * ResponseFormat
+         * @enum {string}
+         */
+        ResponseFormat: "json" | "csv" | "xlsx" | "ods";
+        /**
          * SpanishLiteralEnum
          * @enum {string}
          */
         SpanishLiteralEnum: "APROBADO" | "NOTABLE" | "SOBRESALIENTE" | "MATRICULA";
-        /**
-         * TransferFormat
-         * @enum {string}
-         */
-        TransferFormat: "json" | "csv" | "xlsx" | "ods" | "json-file";
         /**
          * TransferRequest
          * @description Schema for the transfer request
@@ -370,6 +396,41 @@ export interface operations {
             };
         };
     };
+    update_scale: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scale_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcademicScaleUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademicScaleRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     create_equivalence_for_scale: {
         parameters: {
             query?: never;
@@ -437,12 +498,45 @@ export interface operations {
             };
         };
     };
+    update_equivalence: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                equivalence_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GradeEquivalenceUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GradeEquivalenceRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     convert_grade: {
         parameters: {
             query?: {
-                /** @description Response format for converted grades */
-                format?: components["schemas"]["TransferFormat"];
-                /** @description Optional filename for file responses */
+                format?: components["schemas"]["ResponseFormat"] | null;
                 filename?: string | null;
             };
             header?: never;
