@@ -1,6 +1,9 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
+
+	const spanishLiteralOptions = ['APROBADO', 'NOTABLE', 'SOBRESALIENTE', 'MATRICULA'];
 
 	let { data, form }: { data: PageData; form?: { success?: string; error?: string } } = $props();
 	const scale = $derived(data.scale);
@@ -20,6 +23,7 @@
 	</div>
 	<div class="actions">
 		<a href={resolve('/scales')} class="btn-secondary">Back to Scales</a>
+		<a href={resolve(`/scales/${scale?.id}/edit`)} class="btn-tertiary">Edit scale</a>
 		<a href={resolve(`/scales/${scale?.id}/equivalences/new`)} class="btn-tertiary">Add equivalence</a>
 		<form
 			method="POST"
@@ -59,7 +63,24 @@
 
 <section class="card">
 	<h2>Equivalences</h2>
+	<p class="muted">Edit each row directly, then save the change or delete the equivalence.</p>
 	{#if scale?.equivalences && scale.equivalences.length > 0}
+		<div hidden>
+			{#each scale.equivalences as equivalence (equivalence.id)}
+				{@const updateFormId = `equivalence-update-${equivalence.id}`}
+				<form
+					id={updateFormId}
+					method="POST"
+					action="?/updateEquivalence"
+					use:enhance={() => {
+						return async ({ update }) => {
+							await update({ reset: false, invalidateAll: true });
+						};
+					}}>
+					<input type="hidden" name="equivalence_id" value={equivalence.id} />
+				</form>
+			{/each}
+		</div>
 		<div class="table-wrap">
 			<table class="data-table">
 				<thead>
@@ -68,16 +89,52 @@
 						<th>Spanish 1-4</th>
 						<th>Spanish 5-10</th>
 						<th>Literal</th>
+						<th class="action-col">Save</th>
 						<th class="action-col">Actions</th>
 					</tr>
 				</thead>
 				<tbody>
 					{#each scale.equivalences as equivalence (equivalence.id)}
+						{@const updateFormId = `equivalence-update-${equivalence.id}`}
 						<tr>
-							<td>{equivalence.origin_grade}</td>
-							<td>{equivalence.spanish_1_4 ?? '-'}</td>
-							<td>{equivalence.spanish_5_10 ?? '-'}</td>
-							<td>{equivalence.spanish_literal ?? '-'}</td>
+							<td>
+								<input
+									class="equivalence-input"
+									form={updateFormId}
+									name="origin_grade"
+									value={equivalence.origin_grade}
+									required />
+							</td>
+							<td>
+								<input
+									class="equivalence-input"
+									form={updateFormId}
+									name="spanish_1_4"
+									type="number"
+									min="1"
+									max="4"
+									value={equivalence.spanish_1_4 ?? ''}
+									placeholder="Optional" />
+							</td>
+							<td>
+								<input
+									class="equivalence-input"
+									form={updateFormId}
+									name="spanish_5_10"
+									value={equivalence.spanish_5_10}
+									required />
+							</td>
+							<td>
+								<select class="equivalence-input" form={updateFormId} name="spanish_literal" value={equivalence.spanish_literal} required>
+									<option value="" disabled>Select literal</option>
+									{#each spanishLiteralOptions as option (option)}
+										<option value={option}>{option}</option>
+									{/each}
+								</select>
+							</td>
+							<td class="action-col">
+								<button type="submit" form={updateFormId} class="btn-primary btn-small">Save</button>
+							</td>
 							<td class="action-col">
 								<form
 									method="POST"

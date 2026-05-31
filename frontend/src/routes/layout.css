@@ -385,6 +385,10 @@ h3 { font-size: 1.35rem; }
 	border-bottom: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
 }
 
+.data-table td:has(.equivalence-input) {
+	vertical-align: top;
+}
+
 .data-table th {
 	font-size: 0.8rem;
 	text-transform: uppercase;
@@ -572,6 +576,11 @@ textarea:focus {
 .btn-small {
 	padding: 0.35rem 0.7rem;
 	font-size: 0.85rem;
+}
+
+.equivalence-input {
+	width: 100%;
+	min-width: 8rem;
 }
 
 .select-col,
