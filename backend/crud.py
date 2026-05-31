@@ -7,8 +7,8 @@ from . import models
 
 async def get_scale(db: AsyncSession, scale_id: int):
     """Fetch a specific scale and its nested equivalences."""
-    scale = await db.get(models.AcademicScale, scale_id)
-    return scale
+    db_scale = await db.get(models.AcademicScale, scale_id)
+    return db_scale
 
 async def get_scales(db: AsyncSession, skip: int = 0, limit: int = 100):
     """Fetch all available scales for the administrative list view using pagination."""
@@ -40,6 +40,15 @@ async def delete_scale(db: AsyncSession, scale_id: int) -> bool:
     await db.commit()
     return True
 
+async def update_scale(db: AsyncSession, scale_id: int, scale: models.AcademicScaleUpdate):
+    db_scale = await db.get(models.AcademicScale, scale_id)
+    scale_data = scale.model_dump(exclude_unset=True)
+    db_scale.sqlmodel_update(scale_data)
+    db.add(db_scale)
+    await db.commit()
+    await db.refresh(db_scale)
+    return db_scale
+
 # --- Grade Equivalence Operations ---
 
 async def create_grade_equivalence(
@@ -70,3 +79,12 @@ async def delete_equivalence(db: AsyncSession, scale_id: int, equivalence_id: in
     await db.delete(equivalence)
     await db.commit()
     return True
+
+async def update_equivalence(db: AsyncSession, equivalence_id: int, equivalence: models.GradeEquivalenceUpdate):
+    db_equivalence = await db.get(models.GradeEquivalence, equivalence_id)
+    equivalence_data = equivalence.model_dump(exclude_unset=True)
+    db_equivalence.sqlmodel_update(equivalence_data)
+    db.add(db_equivalence)
+    await db.commit()
+    await db.refresh(db_equivalence)
+    return db_equivalence

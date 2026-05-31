@@ -32,12 +32,12 @@ async def read_scale(
     db: AsyncSession = Depends(database.get_database_session)
 ):
     db_scale = await crud.get_scale(db, scale_id=scale_id)
-    if db_scale is None:
+    if not db_scale:
         raise HTTPException(status_code=404, detail="Scale not found")
     return db_scale
 
 @router.delete("/{scale_id}", operation_id="delete_scale")
-async def delete_grade_equivalence(
+async def delete_scale(
     scale_id: int,
     db: AsyncSession = Depends(database.get_database_session)
 ):
@@ -45,6 +45,17 @@ async def delete_grade_equivalence(
     if not await crud.delete_scale(db, scale_id):
         raise HTTPException(status_code=404, detail="Scale not found")
     return {"OK": True}
+
+@router.patch("/{scale_id}", response_model=models.AcademicScaleRead, operation_id="update_scale")
+async def update_scale(
+    scale_id: int,
+    scale: models.AcademicScaleUpdate,
+    db: AsyncSession = Depends(database.get_database_session)
+):
+    db_scale = await crud.update_scale(db, scale_id=scale_id, scale=scale)
+    if not db_scale:
+        raise HTTPException(status_code=404, detail="Scale not found")
+    return db_scale
 
 @router.post("/{scale_id}/equivalences/", response_model=models.GradeEquivalenceRead, operation_id="create_equivalence_for_scale")
 async def create_equivalence_for_scale(
@@ -63,3 +74,14 @@ async def delete_grade_equivalence(
     if not await crud.delete_equivalence(db, scale_id, equivalence_id):
         raise HTTPException(status_code=404, detail="Equivalence not found")
     return {"OK": True}
+
+@router.patch("/{scale_id}/equivalences/{equivalence_id}", response_model=models.GradeEquivalenceRead, operation_id="update_equivalence")
+async def update_equivalence(
+    equivalence_id: int,
+    equivalence: models.GradeEquivalenceUpdate,
+    db: AsyncSession = Depends(database.get_database_session)
+):
+    db_equivalence = await crud.update_equivalence(db, equivalence_id=equivalence_id, equivalence=equivalence)
+    if not db_equivalence:
+        raise HTTPException(status_code=404, detail="Equivalence not found")
+    return db_equivalence

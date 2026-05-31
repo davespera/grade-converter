@@ -10,7 +10,7 @@ from sqlmodel import Field, Relationship, SQLModel
 class GradeEquivalenceBase(SQLModel):
     origin_grade: str = Field(description="Grade from origin country")
     spanish_5_10: Decimal = Field(max_digits=4, decimal_places=2)
-    spanish_1_4: int | None = Field(default=None) # Maybe add ge=1, le=4
+    spanish_1_4: int | None = Field(default=None, ge=1, le=4)
     spanish_literal: SpanishLiteralEnum
 
 
@@ -23,6 +23,12 @@ class GradeEquivalenceRead(GradeEquivalenceBase):
     scale_id: int
 
     model_config = ConfigDict(from_attributes=True)
+
+class GradeEquivalenceUpdate(SQLModel):
+    origin_grade: str = Field(default=None, description="Grade from origin country")
+    spanish_5_10: Decimal = Field(default=None, max_digits=4, decimal_places=2)
+    spanish_1_4: int | None = Field(default=None, ge=1, le=4)
+    spanish_literal: SpanishLiteralEnum | None = None
 
 
 class AcademicScaleBase(SQLModel):
@@ -47,6 +53,11 @@ class AcademicScaleRead(AcademicScaleBase):
 
     model_config = ConfigDict(from_attributes=True)
 
+class AcademicScaleUpdate(SQLModel):
+    country_name: str | None = None
+    scale_description: str | None = None
+    total_grades: int | None = None
+
 
 class GradeInput(SQLModel):
     """Schema for the grade to be converted"""
@@ -65,8 +76,9 @@ class GradeOutput(SQLModel):
 
     subject: str | None = None
     origin_grade: str
-    converted_5_10: Decimal
-    converted_literal: str
+    converted_5_10: Decimal = Field(max_digits=4, decimal_places=2)
+    spanish_1_4: int | None = Field(default=None, ge=1, le=4)
+    converted_literal: str # Check how to add spanish literal enum
 
     model_config = ConfigDict(from_attributes=True)
 
