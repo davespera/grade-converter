@@ -32,9 +32,11 @@
     function removeEquivalence(index: number) {
         equivalences = equivalences.filter((_, i) => i !== index);
     }
-
-    
 </script>
+
+<svelte:head>
+    <title>New Scale | Grade Converter</title>
+</svelte:head>
 
 <div class="page">
     <div class="page-header">
@@ -48,7 +50,10 @@
     </div>
 
     {#if form?.success}
-        <div class="status status-success">Saved: {form.success}</div>
+        <div class="status status-success" role="status">Saved: {form.success}</div>
+    {/if}
+    {#if form?.error}
+        <div class="status status-error" role="alert">Error: {form.error}</div>
     {/if}
 
     <form

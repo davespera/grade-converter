@@ -42,6 +42,10 @@
     }
 </script>
 
+<svelte:head>
+    <title>New Equivalence | Grade Converter</title>
+</svelte:head>
+
 <section class="page-intro">
     <div>
         <p class="eyebrow">Add Equivalence</p>
@@ -56,10 +60,10 @@
 </section>
 
 {#if form?.error}
-    <div class="form-errors">{form.error}</div>
+    <div class="form-errors" role="alert">{form.error}</div>
 {/if}
 {#if form?.success}
-    <div class="success-banner">
+    <div class="success-banner" role="status">
         Added {form.success} equivalence{form.success === 1 ? "" : "s"}.
     </div>
 {/if}

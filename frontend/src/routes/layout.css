@@ -622,3 +622,16 @@ textarea:focus {
 	from { opacity: 0; transform: translateY(12px); }
 	to { opacity: 1; transform: translateY(0); }
 }
+
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #000;
+    color: white;
+    padding: 8px;
+    z-index: 100;
+}
+.skip-link:focus {
+    top: 0;
+}

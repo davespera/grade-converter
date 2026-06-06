@@ -8,6 +8,10 @@
 	let isSubmitting = $state(false);
 </script>
 
+<svelte:head>
+	<title>Edit Scale {scale?.country_name} | Grade Converter</title>
+</svelte:head>
+
 <section class="page-intro">
 	<div>
 		<p class="eyebrow">Edit Scale</p>
@@ -20,7 +24,7 @@
 </section>
 
 {#if form?.error}
-	<div class="form-errors">{form.error}</div>
+	<div class="form-errors" role="alert">{form.error}</div>
 {/if}
 
 <form

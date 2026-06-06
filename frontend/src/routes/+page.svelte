@@ -2,6 +2,10 @@
     import { resolve } from '$app/paths';
 </script>
 
+<svelte:head>
+    <title>Home | Grade Converter</title>
+</svelte:head>
+
 <section class="hero">
     <div>
         <p class="eyebrow">Academic Conversion Suite</p>
