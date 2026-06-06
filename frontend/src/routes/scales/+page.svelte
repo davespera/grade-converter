@@ -36,12 +36,16 @@
         if (selectedEquivalenceCount > 0) {
             parts.push(`${selectedEquivalenceCount} equivalence${selectedEquivalenceCount === 1 ? "" : "s"}`);
         }
-        const message = 'Delete ${parts.join(" and ")}?';
+        const message = `Delete ${parts.join(" and ")}?`;
         if (!confirm(message)) {
             event.preventDefault();
         }
     }
 </script>
+
+<svelte:head>
+    <title>Scales Library | Grade Converter</title>
+</svelte:head>
 
 <section class="page-hero">
     <div class="hero-copy">
@@ -83,10 +87,10 @@
     </section>
 {:else}
     {#if form?.error}
-        <div class="form-errors">{form.error}</div>
+        <div class="form-errors" role="alert">{form.error}</div>
     {/if}
     {#if form?.success}
-        <div class="success-banner">{form.success}</div>
+        <div class="success-banner" role="status">{form.success}</div>
     {/if}
 
     <form
@@ -145,7 +149,7 @@
                             onsubmit={(event) =>
                                 confirmDelete(
                                     event,
-                                    'Delete ${scale.country_name} scale? This removes all associated equivalences.'
+                                    `Delete ${scale.country_name} scale? This removes all associated equivalences.`
                                 )
                             }>
                             <input type="hidden" name="scale_id" value={scale.id} />

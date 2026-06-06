@@ -34,6 +34,7 @@
 </svelte:head>
 
 <div class="page-shell">
+	<a href="#main-content" class="skip-link">Skip to main content</a>
 	<header class="top-nav">
 		<div class="nav-inner">
 			<a class="brand" href={resolve('/')}
@@ -55,7 +56,7 @@
 		</div>
 	</header>
 
-	<main class="content">
+	<main id="main-content" class="content">
 		{@render children()}
 	</main>
 
