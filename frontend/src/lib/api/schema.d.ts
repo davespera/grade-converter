@@ -120,8 +120,6 @@ export interface components {
             country_name: string;
             /** Scale Description */
             scale_description: string;
-            /** Total Grades */
-            total_grades?: number | null;
         };
         /** AcademicScaleRead */
         AcademicScaleRead: {
@@ -129,12 +127,15 @@ export interface components {
             country_name: string;
             /** Scale Description */
             scale_description: string;
-            /** Total Grades */
-            total_grades?: number | null;
             /** Id */
             id: number;
             /** Equivalences */
             equivalences?: components["schemas"]["GradeEquivalenceRead"][];
+            /**
+             * Total Grades
+             * @description Number of grade equivalences mapped for this scale, derived rather than stored.
+             */
+            readonly total_grades: number;
         };
         /** AcademicScaleUpdate */
         AcademicScaleUpdate: {
@@ -142,8 +143,6 @@ export interface components {
             country_name?: string | null;
             /** Scale Description */
             scale_description?: string | null;
-            /** Total Grades */
-            total_grades?: number | null;
         };
         /** GradeEquivalenceCreate */
         GradeEquivalenceCreate: {

@@ -2,7 +2,7 @@ from enum import Enum
 from decimal import Decimal
 from datetime import datetime, timezone
 
-from pydantic import ConfigDict
+from pydantic import ConfigDict, computed_field
 from sqlmodel import Field, Relationship, SQLModel
 
 # --- Shared API Schemas ---
@@ -34,7 +34,6 @@ class GradeEquivalenceUpdate(SQLModel):
 class AcademicScaleBase(SQLModel):
     country_name: str = Field(max_length=100)
     scale_description: str = Field(max_length=255)
-    total_grades: int | None = None # Defaults to None
 
 
 class AcademicScaleCreate(AcademicScaleBase):
@@ -53,10 +52,15 @@ class AcademicScaleRead(AcademicScaleBase):
 
     model_config = ConfigDict(from_attributes=True)
 
+    @computed_field
+    @property
+    def total_grades(self) -> int:
+        """Number of grade equivalences mapped for this scale, derived rather than stored."""
+        return len(self.equivalences)
+
 class AcademicScaleUpdate(SQLModel):
     country_name: str | None = None
     scale_description: str | None = None
-    total_grades: int | None = None
 
 
 class GradeInput(SQLModel):

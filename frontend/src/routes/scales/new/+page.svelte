@@ -87,11 +87,6 @@
                         placeholder="e.g., Min grade - max grade"
                         required />
                 </label>
-
-                <label class="field">
-                    <span>Total number of grades</span>
-                    <input name="total_grades" placeholder="Optional" />
-                </label>
             </div>
         </section>
 

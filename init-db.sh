@@ -30,8 +30,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     CREATE TABLE academic_scales (
         id SERIAL PRIMARY KEY,
         country_name VARCHAR(100) NOT NULL,
-        scale_description VARCHAR(255) NOT NULL,
-        total_grades INTEGER /*,
+        scale_description VARCHAR(255) NOT NULL /*,
         CONSTRAINT unique_country_scale UNIQUE (country_name, scale_description)*/ -- If uncommented, keep , at prev line
     );
     ALTER TABLE academic_scales OWNER TO ${API_DB_USER};
@@ -57,12 +56,12 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     ALTER TABLE api_users OWNER TO ${API_DB_USER};
 
     -- Populate initial data (Scales)
-    INSERT INTO academic_scales (id, country_name, scale_description, total_grades) VALUES
-    (1, 'AFGANISTAN', '50(1ª)-100(51ª)', 51),
-    (2, 'ALBANIA', '5(1ª)-10(6ª)', 6),
-    (3, 'ALEMANIA', 'D(1,0)(1ª)-A(4,0)(10ª)', 10),
-    (4, 'ALEMANIA', 'D(1,0)(1ª)-A(4,0)(6ª)', 6),
-    (5, 'ALEMANIA', 'GE/A(4)(1ª)-SG(1)(4ª)', 5);
+    INSERT INTO academic_scales (id, country_name, scale_description) VALUES
+    (1, 'AFGANISTAN', '50(1ª)-100(51ª)'),
+    (2, 'ALBANIA', '5(1ª)-10(6ª)'),
+    (3, 'ALEMANIA', 'D(1,0)(1ª)-A(4,0)(10ª)'),
+    (4, 'ALEMANIA', 'D(1,0)(1ª)-A(4,0)(6ª)'),
+    (5, 'ALEMANIA', 'GE/A(4)(1ª)-SG(1)(4ª)');
 
     INSERT INTO grade_equivalences (scale_id, origin_grade, spanish_5_10, spanish_1_4, spanish_literal) VALUES
     (1, '50,00', 5.00, 1, 'APROBADO'),

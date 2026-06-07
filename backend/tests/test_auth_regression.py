@@ -48,7 +48,6 @@ async def _setup_schema_and_seed() -> None:
         scale = models.AcademicScale(
             country_name="TESTLAND",
             scale_description="A-F",
-            total_grades=6,
         )
         session.add(scale)
         await session.flush()

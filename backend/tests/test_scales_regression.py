@@ -45,7 +45,6 @@ async def _setup_schema_and_seed() -> None:
         scale = models.AcademicScale(
             country_name="TESTLAND",
             scale_description="A-F",
-            total_grades=6,
         )
         session.add(scale)
         await session.flush()
@@ -110,7 +109,6 @@ def test_get_scales_handles_mixed_equivalence_collections_regression() -> None:
                     models.AcademicScale(
                         country_name="EMPTYLAND",
                         scale_description="0-100",
-                        total_grades=101,
                     )
                 )
                 await session.commit()
@@ -189,7 +187,7 @@ def test_get_scale_by_id_returns_404_for_missing_scale() -> None:
         asyncio.run(_teardown_schema())
 
 
-def test_create_scale_returns_new_scale_with_empty_equivalences() -> None:
+def test_create_scale_returns_new_scale_with_computed_total_grades() -> None:
     asyncio.run(_setup_schema_and_seed())
 
     app = FastAPI()
@@ -204,7 +202,6 @@ def test_create_scale_returns_new_scale_with_empty_equivalences() -> None:
             json={
                 "country_name": "SPAIN",
                 "scale_description": "0-10",
-                "total_grades": 11,
             },
         )
         payload = response.json()
@@ -212,9 +209,9 @@ def test_create_scale_returns_new_scale_with_empty_equivalences() -> None:
         assert response.status_code == 200
         assert payload["country_name"] == "SPAIN"
         assert payload["scale_description"] == "0-10"
-        assert payload["total_grades"] == 11
         assert "id" in payload
         assert payload["equivalences"] == []
+        assert payload["total_grades"] == 0
     finally:
         app.dependency_overrides.clear()
         if client is not None:
@@ -324,17 +321,17 @@ def test_update_scale_patches_fields_and_keeps_equivalences_regression() -> None
 
         response = client.patch(
             "/scales/1",
-            json={"scale_description": "Updated A-F", "total_grades": 7},
+            json={"scale_description": "Updated A-F"},
         )
         payload = response.json()
 
         assert response.status_code == 200
         assert payload["id"] == 1
         assert payload["scale_description"] == "Updated A-F"
-        assert payload["total_grades"] == 7
         assert isinstance(payload["equivalences"], list)
         assert len(payload["equivalences"]) == 1
         assert payload["equivalences"][0]["origin_grade"] == "A"
+        assert payload["total_grades"] == 1
     finally:
         app.dependency_overrides.clear()
         if client is not None:

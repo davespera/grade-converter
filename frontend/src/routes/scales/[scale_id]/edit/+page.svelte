@@ -41,7 +41,7 @@
 	<section class="card form-card">
 		<header>
 			<h2>Scale details</h2>
-			<p class="lead">Change the country name, description, or total grade count.</p>
+			<p class="lead">Change the country name or description.</p>
 		</header>
 		<div class="form-grid">
 			<label class="field">
@@ -52,17 +52,6 @@
 			<label class="field">
 				<span>Scale description</span>
 				<input name="scale_description" value={scale?.scale_description ?? ''} required />
-			</label>
-
-			<label class="field">
-				<span>Total grades</span>
-				<input
-					name="total_grades"
-					type="number"
-					min="1"
-					step="1"
-					value={scale?.total_grades ?? ''}
-					placeholder="Optional" />
 			</label>
 		</div>
 	</section>
