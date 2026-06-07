@@ -14,7 +14,6 @@ async def get_scales(db: AsyncSession, skip: int = 0, limit: int = 100):
     """Fetch all available scales for the administrative list view using pagination."""
     query = (
         select(models.AcademicScale)
-        #.options(selectinload(models.AcademicScale.equivalences))
         .offset(skip)
         .limit(limit)
     )
@@ -28,8 +27,7 @@ async def create_scale(db: AsyncSession, scale: models.AcademicScaleCreate):
     db.add(db_scale)
     await db.commit()
     await db.refresh(db_scale)
-    # Ensures relationships are loaded for the response model due to async
-    return await get_scale(db, db_scale.id)
+    return db_scale
 
 async def delete_scale(db: AsyncSession, scale_id: int) -> bool:
     """Delete an existing scale."""
@@ -41,6 +39,7 @@ async def delete_scale(db: AsyncSession, scale_id: int) -> bool:
     return True
 
 async def update_scale(db: AsyncSession, scale_id: int, scale: models.AcademicScaleUpdate):
+    """Update all or some values of an existing scale."""
     db_scale = await db.get(models.AcademicScale, scale_id)
     scale_data = scale.model_dump(exclude_unset=True)
     db_scale.sqlmodel_update(scale_data)
@@ -81,6 +80,7 @@ async def delete_equivalence(db: AsyncSession, scale_id: int, equivalence_id: in
     return True
 
 async def update_equivalence(db: AsyncSession, equivalence_id: int, equivalence: models.GradeEquivalenceUpdate):
+    """Update all or some values of a specific grade mapping in an existing scale."""
     db_equivalence = await db.get(models.GradeEquivalence, equivalence_id)
     equivalence_data = equivalence.model_dump(exclude_unset=True)
     db_equivalence.sqlmodel_update(equivalence_data)
