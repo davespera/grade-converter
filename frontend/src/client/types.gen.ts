@@ -16,10 +16,6 @@ export type AcademicScaleCreate = {
      * Scale Description
      */
     scale_description: string;
-    /**
-     * Total Grades
-     */
-    total_grades?: number | null;
 };
 
 /**
@@ -35,10 +31,6 @@ export type AcademicScaleRead = {
      */
     scale_description: string;
     /**
-     * Total Grades
-     */
-    total_grades?: number | null;
-    /**
      * Id
      */
     id: number;
@@ -46,6 +38,13 @@ export type AcademicScaleRead = {
      * Equivalences
      */
     equivalences?: Array<GradeEquivalenceRead>;
+    /**
+     * Total Grades
+     *
+     * Number of grade equivalences mapped for this scale, derived rather than stored.
+     * @readonly
+     */
+    readonly total_grades: number;
 };
 
 /**

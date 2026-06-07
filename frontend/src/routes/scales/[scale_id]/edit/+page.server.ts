@@ -30,21 +30,14 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const countryName = String(data.get('country_name') ?? '').trim();
 		const scaleDescription = String(data.get('scale_description') ?? '').trim();
-		const totalGradesRaw = String(data.get('total_grades') ?? '').trim();
 
 		if (!countryName || !scaleDescription) {
 			return { error: 'Country name and scale description are required.' };
 		}
 
-		const totalGrades = totalGradesRaw ? Number(totalGradesRaw) : null;
-		if (totalGradesRaw && !Number.isInteger(totalGrades)) {
-			return { error: 'Total grades must be a whole number.' };
-		}
-
 		const payload: components['schemas']['AcademicScaleUpdate'] = {
 			country_name: countryName,
-			scale_description: scaleDescription,
-			total_grades: totalGrades
+			scale_description: scaleDescription
 		};
 
 		const { error } = await client.PATCH('/scales/{scale_id}', {

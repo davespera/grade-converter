@@ -7,7 +7,6 @@ export const actions = {
 		const data = await request.formData();
 		const country_name = data.get('country_name') as string;
 		const scale_description = data.get('scale_description') as string;
-		const total_grades = data.get('total_grades') ? Number(data.get('total_grades')) : null; // NOTE: In the future utomatically generate this value
 
 
 		const origin_grades = data.getAll('origin_grade') as string[];
@@ -38,7 +37,6 @@ export const actions = {
 			body: {
 				country_name: country_name,
 				scale_description: scale_description,
-				total_grades: total_grades,
 			}
 		});
 
