@@ -60,9 +60,11 @@ docker compose --env-file .env.shared --env-file .env up -d --build
 
 ## Useful Commands
 
+- `just` lists available recipes.
 - `just up` starts the app stack.
 - `just down` stops the app stack and removes volumes.
 - `just build` rebuilds the full stack.
+- `just gen-api` updates openapi schema in frontend.
 
 ## Notes
 
