@@ -38,7 +38,7 @@
                     autocomplete="off" />
             </label>
             <label class="field">
-                <span>Scale identifier <em class="muted">(optional)</em></span>
+                <span>Scale identifier</span>
                 <input
                     type="text"
                     name="scale"
