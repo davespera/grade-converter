@@ -3,6 +3,19 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 from . import models
 
+
+def normalize_grade(grade: str) -> str:
+    """Round a grade string to 2 decimal places, comma as decimal separator.
+
+    Non-numeric grades (letter grades, codes) are returned unchanged so they
+    still participate in exact matching against letter-grade scales.
+    """
+    try:
+        return f"{round(float(grade.replace(',', '.')), 2):.2f}".replace('.', ',')
+    except ValueError:
+        return grade
+
+
 # --- Academic Scale Operations ---
 
 async def get_scale(db: AsyncSession, scale_id: int):
@@ -45,6 +58,49 @@ async def search_scales(
 
     result = await db.exec(query)
     return result.all()
+
+async def match_scales(
+    db: AsyncSession,
+    country: str,
+    grades: list[str],
+) -> list[models.ScaleMatchResult]:
+    """Rank a country's scales by how many of the given grades they cover.
+
+    The transcript's grade set is the only signal that disambiguates between the
+    many scales a country can have (their ``scale_description`` / id_escala is an
+    opaque code that cannot be derived from a transcript). For each scale under the
+    country we count how many distinct query grades have an equivalence, and rank by
+    coverage. Equivalences load via the relationship's default selectin eager loading.
+    """
+    query_set = {normalize_grade(g) for g in grades}
+
+    query = select(models.AcademicScale).where(
+        models.AcademicScale.country_name.ilike(f"%{country}%")
+    )
+    result = await db.exec(query)
+    scales = result.all()
+
+    results: list[models.ScaleMatchResult] = []
+    for scale in scales:
+        scale_grades = {e.origin_grade for e in scale.equivalences}
+        matched = query_set & scale_grades
+        results.append(
+            models.ScaleMatchResult(
+                scale_id=scale.id,
+                country_name=scale.country_name,
+                scale_description=scale.scale_description,
+                matched_count=len(matched),
+                total_query_grades=len(query_set),
+                scale_total_grades=len(scale_grades),
+                unmatched_grades=sorted(query_set - scale_grades),
+                coverage=len(matched) / len(query_set) if query_set else 0.0,
+            )
+        )
+
+    # Highest coverage first, then the tightest scale, then a deterministic id.
+    results.sort(key=lambda r: (-r.coverage, r.scale_total_grades, r.scale_id))
+    return results
+
 
 async def create_scale(db: AsyncSession, scale: models.AcademicScaleCreate):
     """Register a new country scale."""

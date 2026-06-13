@@ -91,6 +91,26 @@ class TransferResponse(SQLModel):
 
     conversion: list[GradeOutput]
 
+
+class ScaleMatchRequest(SQLModel):
+    """Resolve a scale_id from a country and the grades observed in a transcript."""
+
+    country: str
+    grades: list[str]  # distinct origin grades observed in the transcript
+
+
+class ScaleMatchResult(SQLModel):
+    """A candidate scale ranked by how well it covers the queried grades."""
+
+    scale_id: int
+    country_name: str
+    scale_description: str
+    matched_count: int  # distinct query grades present in this scale
+    total_query_grades: int  # number of distinct query grades
+    scale_total_grades: int  # total equivalences in the scale
+    unmatched_grades: list[str]  # query grades NOT in this scale
+    coverage: float  # matched_count / total_query_grades (0.0 if none)
+
 # --- Tables ---
 
 class SpanishLiteralEnum(str, Enum):
