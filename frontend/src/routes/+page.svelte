@@ -16,7 +16,8 @@
         </p>
         <div class="hero-actions">
             <a href={resolve('/scales')} class="btn-primary">Explore Scales</a>
-            <a href={resolve('/scales/new')} class="btn-secondary">Create New Scale</a>
+            <a href={resolve('/scales/search')} class="btn-secondary">Search by Country</a>
+            <a href={resolve('/scales/new')} class="btn-tertiary">Create New Scale</a>
         </div>
     </div>
 

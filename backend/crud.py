@@ -1,4 +1,4 @@
-#from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import noload
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 from . import models
@@ -17,6 +17,31 @@ async def get_scales(db: AsyncSession, skip: int = 0, limit: int = 100):
         .offset(skip)
         .limit(limit)
     )
+
+    result = await db.exec(query)
+    return result.all()
+
+async def search_scales(
+    db: AsyncSession,
+    country: str | None = None,
+    scale_description: str | None = None,
+    skip: int = 0,
+    limit: int = 20,
+):
+    """List scales filtered by country and/or scale identifier (id_escala).
+
+    Both filters are case-insensitive substring matches. Equivalences are not
+    loaded (noload overrides the relationship's selectin eager loading), keeping
+    this a lightweight list for country/scale lookups.
+    """
+    query = select(models.AcademicScale).options(
+        noload(models.AcademicScale.equivalences)
+    )
+    if country:
+        query = query.where(models.AcademicScale.country_name.ilike(f"%{country}%"))
+    if scale_description:
+        query = query.where(models.AcademicScale.scale_description.ilike(f"%{scale_description}%"))
+    query = query.offset(skip).limit(limit)
 
     result = await db.exec(query)
     return result.all()

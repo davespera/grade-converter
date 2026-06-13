@@ -22,6 +22,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/scales/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search Scales */
+        get: operations["search_scales"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/scales/{scale_id}": {
         parameters: {
             query?: never;
@@ -120,6 +137,15 @@ export interface components {
             country_name: string;
             /** Scale Description */
             scale_description: string;
+        };
+        /** AcademicScaleList */
+        AcademicScaleList: {
+            /** Country Name */
+            country_name: string;
+            /** Scale Description */
+            scale_description: string;
+            /** Id */
+            id: number;
         };
         /** AcademicScaleRead */
         AcademicScaleRead: {
@@ -320,6 +346,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AcademicScaleRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_scales: {
+        parameters: {
+            query?: {
+                country?: string | null;
+                scale_description?: string | null;
+                skip?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcademicScaleList"][];
                 };
             };
             /** @description Validation Error */

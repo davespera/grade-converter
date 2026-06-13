@@ -26,6 +26,18 @@ async def read_scales(
     scales = await crud.get_scales(db, skip=skip, limit=limit)
     return scales
 
+@router.get("/search", response_model=List[models.AcademicScaleList], operation_id="search_scales")
+async def search_scales(
+    country: str | None = None,
+    scale_description: str | None = None,
+    skip: int = 0,
+    limit: int = 20,
+    db: AsyncSession = Depends(database.get_database_session)
+):
+    return await crud.search_scales(
+        db, country=country, scale_description=scale_description, skip=skip, limit=limit
+    )
+
 @router.get("/{scale_id}", response_model=models.AcademicScaleRead, operation_id="read_scale")
 async def read_scale(
     scale_id: int, 

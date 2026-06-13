@@ -85,7 +85,8 @@
         <p class="lead">Browse, review, and refine equivalences with confidence.</p>
         <div class="hero-actions">
             <a href={resolve("/scales/new")} class="btn-primary">Create New Scale</a>
-            <a href={resolve("/")} class="btn-secondary">Back to Home</a>
+            <a href={resolve("/scales/search")} class="btn-secondary">Search by Country</a>
+            <a href={resolve("/")} class="btn-tertiary">Back to Home</a>
         </div>
     </div>
     <div class="hero-panel card">
