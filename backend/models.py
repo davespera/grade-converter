@@ -97,7 +97,7 @@ class SpanishLiteralEnum(str, Enum):
     APROBADO = "APROBADO"
     NOTABLE = "NOTABLE"
     SOBRESALIENTE = "SOBRESALIENTE"
-    MATRICULA = "MATRICULA"
+    MATRICULA_DE_HONOR = "MATRICULA DE HONOR"
 
 class AcademicScale(AcademicScaleBase, table=True):
     __tablename__ = "academic_scales"

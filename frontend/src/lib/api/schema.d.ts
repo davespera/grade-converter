@@ -227,7 +227,7 @@ export interface components {
          * SpanishLiteralEnum
          * @enum {string}
          */
-        SpanishLiteralEnum: "APROBADO" | "NOTABLE" | "SOBRESALIENTE" | "MATRICULA";
+        SpanishLiteralEnum: "APROBADO" | "NOTABLE" | "SOBRESALIENTE" | "MATRICULA DE HONOR";
         /**
          * TransferRequest
          * @description Schema for the transfer request

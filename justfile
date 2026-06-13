@@ -12,6 +12,8 @@ dev-up:
     docker compose -f proxy/traefik-docker-compose.yml up -d && docker compose --env-file .env.shared --env-file .env up 
 down-proxy:
     docker compose -f proxy/traefik-docker-compose.yml down
+seed *ARGS:
+    docker compose --env-file .env.shared --env-file .env exec backend python -m backend.seed {{ARGS}}
 gen-api:
     backend/venv/bin/python -m backend.export_openapi frontend/.openapi.json
     cd frontend && npm run gen-api

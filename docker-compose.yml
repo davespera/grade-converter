@@ -18,6 +18,9 @@ services:
         condition: service_healthy
     environment:
       - DATABASE_URL=postgresql+asyncpg://${API_DB_USER}:${API_DB_PASSWORD}@postgres:5432/${API_DB_NAME}
+      - SEED_ON_STARTUP=${SEED_ON_STARTUP:-false}
+      - FASTAPI_ACTIVEPIECES_API_KEY=${FASTAPI_ACTIVEPIECES_API_KEY}
+      - FRONTEND_URL=${FRONTEND_URL}
     networks:
       - app-network
 
