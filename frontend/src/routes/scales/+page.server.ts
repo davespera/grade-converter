@@ -3,18 +3,20 @@ import { client } from '$lib/api/client'
 import type { Actions, PageServerLoad } from './$types'; 
 import type { RequestEvent } from '@sveltejs/kit';
 
+const PAGE_SIZE = 20;
+
 export const load: PageServerLoad = async () => {
 	const { data, error } = await client.GET('/scales/', {
 		params: {
-			query: { limit: 50, page: 1}
+			query: { skip: 0, limit: PAGE_SIZE }
 		}
 	});
 
 	if (error || !data) {
 		return { status: 500, error };
 	}
-	
-	return { scales: data };
+
+	return { scales: data, pageSize: PAGE_SIZE };
 }
 
 export const actions: Actions = {

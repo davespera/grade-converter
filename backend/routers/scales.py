@@ -19,8 +19,8 @@ async def create_scale(
 
 @router.get("/", response_model=List[models.AcademicScaleRead], operation_id="read_scales")
 async def read_scales(
-    skip: int = 0, 
-    limit: int = 100, 
+    skip: int = 0,
+    limit: int = 20,
     db: AsyncSession = Depends(database.get_database_session)
 ):
     scales = await crud.get_scales(db, skip=skip, limit=limit)

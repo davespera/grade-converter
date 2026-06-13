@@ -337,6 +337,12 @@ h3 { font-size: 1.35rem; }
 	gap: 1.4rem;
 }
 
+.load-more {
+	display: flex;
+	justify-content: center;
+	padding: 1.5rem 0;
+}
+
 .scale-card {
 	display: grid;
 	gap: 1.1rem;
