@@ -82,7 +82,7 @@ async def match_scales(
 
     results: list[models.ScaleMatchResult] = []
     for scale in scales:
-        scale_grades = {e.origin_grade for e in scale.equivalences}
+        scale_grades = {normalize_grade(e.origin_grade) for e in scale.equivalences}
         matched = query_set & scale_grades
         results.append(
             models.ScaleMatchResult(
