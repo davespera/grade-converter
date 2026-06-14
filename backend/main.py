@@ -4,7 +4,9 @@ from fastapi.concurrency import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base
 from .routers import scales, transfer
-from .auth import handle_api_key  
+from .auth import handle_api_key
+from .seed import seed
+import logging
 import os
 
 @asynccontextmanager
@@ -12,6 +14,11 @@ async def lifespan(app: FastAPI):
     # Startup code: Create database tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    # Idempotent: skips if scales already exist (see backend/seed.py)
+    if os.getenv("SEED_ON_STARTUP", "false").lower() == "true":
+        # uvicorn only configures its own loggers; give the seed logger a handler
+        logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+        await seed()
     yield
     # Shutdown code: Dispose of the engine
     await engine.dispose()

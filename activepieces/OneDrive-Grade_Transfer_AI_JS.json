@@ -1,0 +1,197 @@
+{
+  "name": "Grade Transfer AI (OneDrive)",
+  "type": "SHARED",
+  "summary": "",
+  "description": "Ingest a transcript PDF dropped in OneDrive, use the Anthropic Claude piece to extract the issuing country and the grades, resolve the matching scale via POST /scales/match (ranked by grade coverage), then run the transfer for the covered grades. If no scale can be confidently resolved, a needs-review JSON is uploaded instead. Backend calls are done with a CODE step (JS variant).",
+  "tags": [],
+  "blogUrl": "",
+  "metadata": {
+    "externalId": "ai_GradeTransfer_OneDrive_JS"
+  },
+  "author": "D E",
+  "categories": [],
+  "pieces": [
+    "@activepieces/piece-microsoft-onedrive",
+    "@activepieces/piece-claude"
+  ],
+  "flows": [
+    {
+      "displayName": "Grade Transfer AI (OneDrive)",
+      "trigger": {
+        "name": "trigger",
+        "valid": true,
+        "displayName": "New File in OneDrive",
+        "type": "PIECE_TRIGGER",
+        "settings": {
+          "pieceName": "@activepieces/piece-microsoft-onedrive",
+          "pieceVersion": "~0.3.0",
+          "triggerName": "new_file",
+          "input": {
+            "parentFolder": ""
+          },
+          "propertySettings": {
+            "parentFolder": { "type": "MANUAL" }
+          }
+        },
+        "lastUpdatedDate": "2026-06-11T00:00:00.000Z",
+        "nextAction": {
+          "name": "step_1",
+          "type": "PIECE",
+          "valid": true,
+          "skip": false,
+          "displayName": "Download PDF from OneDrive",
+          "lastUpdatedDate": "2026-06-11T00:00:00.000Z",
+          "settings": {
+            "pieceName": "@activepieces/piece-microsoft-onedrive",
+            "pieceVersion": "~0.3.0",
+            "actionName": "download_file",
+            "input": {
+              "lookupBy": "id",
+              "fileIdentifier": "{{trigger.id}}"
+            },
+            "propertySettings": {
+              "lookupBy": { "type": "MANUAL" },
+              "fileIdentifier": { "type": "MANUAL" }
+            },
+            "sampleData": {},
+            "errorHandlingOptions": {
+              "retryOnFailure": { "value": false },
+              "continueOnFailure": { "value": false }
+            }
+          },
+          "nextAction": {
+            "name": "step_2",
+            "type": "PIECE",
+            "valid": true,
+            "skip": false,
+            "displayName": "Extract Grades with Claude",
+            "lastUpdatedDate": "2026-06-11T00:00:00.000Z",
+            "settings": {
+              "pieceName": "@activepieces/piece-claude",
+              "pieceVersion": "~0.4.7",
+              "actionName": "extract-structured-data",
+              "input": {
+                "model": "claude-sonnet-4-6",
+                "text": "",
+                "image": "{{step_1.data}}",
+                "prompt": "You are reading an academic transcript or diploma PDF issued by a non-Spanish university. Extract the following:\n1. country: the country where the issuing institution is located, written as the official Spanish-language country name in UPPERCASE (e.g. United States -> ESTADOS UNIDOS DE AMERICA, Germany -> ALEMANIA, United Kingdom -> REINO UNIDO). If it is not explicitly stated, infer it from the institution, language or address.\n2. grading_system: a short description of the grading scale used (e.g. 'US 4.0 GPA letter grades', 'German 1,0-5,0'), if identifiable; otherwise an empty string.\n3. grade_type: 'numerico' if grades are numbers, 'literal' if letters or words, 'mixto' if both.\n4. grades: every subject together with its grade. Copy the grade exactly as written, except normalise the decimal separator to a comma (3.7 -> 3,7) so it matches the reference dataset. Do not convert, round or translate the grade.",
+                "mode": "advanced",
+                "schema": {
+                  "fields": {
+                    "type": "object",
+                    "properties": {
+                      "country": {
+                        "type": "string",
+                        "description": "Issuing country as the official Spanish-language name in UPPERCASE (e.g. ALEMANIA, ESTADOS UNIDOS DE AMERICA)"
+                      },
+                      "grading_system": {
+                        "type": "string",
+                        "description": "Short description of the grading scale used, if identifiable; otherwise an empty string"
+                      },
+                      "grade_type": {
+                        "type": "string",
+                        "description": "'numerico', 'literal' or 'mixto'"
+                      },
+                      "grades": {
+                        "type": "array",
+                        "description": "All subjects and their grades found in the transcript",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "subject": {
+                              "type": "string",
+                              "description": "The subject/course name"
+                            },
+                            "origin_grade": {
+                              "type": "string",
+                              "description": "The grade exactly as written (decimal separator normalised to a comma)"
+                            }
+                          },
+                          "required": ["origin_grade"]
+                        }
+                      }
+                    },
+                    "required": ["country", "grades"]
+                  }
+                },
+                "maxTokens": 4096
+              },
+              "propertySettings": {
+                "model": { "type": "MANUAL" },
+                "text": { "type": "MANUAL" },
+                "image": { "type": "MANUAL" },
+                "prompt": { "type": "MANUAL" },
+                "mode": { "type": "MANUAL" },
+                "schema": { "type": "MANUAL" },
+                "maxTokens": { "type": "MANUAL" }
+              },
+              "sampleData": {},
+              "errorHandlingOptions": {
+                "retryOnFailure": { "value": false },
+                "continueOnFailure": { "value": false }
+              }
+            },
+            "nextAction": {
+              "name": "step_3",
+              "type": "CODE",
+              "valid": true,
+              "skip": false,
+              "displayName": "Resolve scale_id & Call Backend",
+              "lastUpdatedDate": "2026-06-11T00:00:00.000Z",
+              "settings": {
+                "input": {
+                  "file_name": "{{trigger.name}}",
+                  "country": "{{step_2.country}}",
+                  "grading_system": "{{step_2.grading_system}}",
+                  "grade_type": "{{step_2.grade_type}}",
+                  "grades": "{{step_2.grades}}"
+                },
+                "sampleData": {},
+                "sourceCode": {
+                  "code": "export const code = async (inputs) => {\n  const BACKEND = 'http://backend:8000';\n  const MIN_COVERAGE = 1.0;\n\n  const grades = Array.isArray(inputs.grades) ? inputs.grades : [];\n  const distinct = [...new Set(grades.map((g) => g.origin_grade).filter((v) => v != null))];\n\n  // Base filename (without extension) used to name the output file.\n  const rawName = inputs.file_name || 'transcript';\n  const base = rawName.replace(/\\.[^/.]+$/, '') || 'transcript';\n\n  const toBase64 = (str) => Buffer.from(str).toString('base64');\n\n  // 1. Resolve the scale from country + observed grades (unauthenticated endpoint).\n  const matchRes = await fetch(`${BACKEND}/scales/match`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ country: inputs.country || '', grades: distinct }),\n  });\n  const candidates = matchRes.ok ? await matchRes.json() : [];\n\n  // 2. Decide confidence: best scale must fully cover the grades and not tie another.\n  const top = candidates[0];\n  const second = candidates[1];\n  let reason = null;\n  if (!top || top.coverage < MIN_COVERAGE) {\n    reason = top ? 'low_coverage' : 'no_candidates';\n  } else if (\n    second &&\n    second.coverage === top.coverage &&\n    second.scale_total_grades === top.scale_total_grades\n  ) {\n    reason = 'ambiguous';\n  }\n\n  // 3a. Unresolved/ambiguous -> upload a needs-review artifact instead of guessing.\n  if (reason) {\n    const review = {\n      status: 'NEEDS_REVIEW',\n      reason,\n      extracted: {\n        country: inputs.country || null,\n        grading_system: inputs.grading_system || null,\n        grade_type: inputs.grade_type || null,\n        grades,\n      },\n      candidates: candidates.slice(0, 5),\n      instructions:\n        'Pick the correct scale_id and re-run the transfer manually, or fix the country in the document and re-upload.',\n    };\n    return {\n      needsReview: true,\n      reason,\n      file: toBase64(JSON.stringify(review, null, 2)),\n      fileName: `${base}-NEEDS-REVIEW.json`,\n      contentType: 'application/json',\n    };\n  }\n\n  // 3b. Confident -> transfer only the grades the matched scale actually covers.\n  const unmatched = new Set(top.unmatched_grades || []);\n  const coveredGrades = grades.filter((g) => !unmatched.has(g.origin_grade));\n\n  const response = await fetch(`${BACKEND}/transfer/?format=xlsx`, {\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n      'x-api-key': process.env.FASTAPI_ACTIVEPIECES_API_KEY || '',\n    },\n    body: JSON.stringify({ scale_id: top.scale_id, grades: coveredGrades }),\n  });\n\n  const arrayBuffer = await response.arrayBuffer();\n  const base64 = Buffer.from(arrayBuffer).toString('base64');\n\n  return {\n    needsReview: false,\n    scale_id: top.scale_id,\n    scale_description: top.scale_description,\n    unmatched_grades: top.unmatched_grades || [],\n    status: response.status,\n    file: base64,\n    fileName: `${base}-transfer.xlsx`,\n    contentType: response.headers.get('content-type'),\n  };\n};\n",
+                  "packageJson": "{}"
+                },
+                "errorHandlingOptions": {
+                  "retryOnFailure": { "value": false },
+                  "continueOnFailure": { "value": false }
+                }
+              },
+              "nextAction": {
+                "name": "step_4",
+                "type": "PIECE",
+                "valid": true,
+                "skip": false,
+                "displayName": "Upload Result to OneDrive",
+                "lastUpdatedDate": "2026-06-11T00:00:00.000Z",
+                "settings": {
+                  "pieceName": "@activepieces/piece-microsoft-onedrive",
+                  "pieceVersion": "~0.3.0",
+                  "actionName": "upload_onedrive_file",
+                  "input": {
+                    "file": "{{step_3.file}}",
+                    "fileName": "{{step_3.fileName}}",
+                    "parentFolder": ""
+                  },
+                  "propertySettings": {
+                    "file": { "type": "MANUAL" },
+                    "fileName": { "type": "MANUAL" },
+                    "parentFolder": { "type": "MANUAL" }
+                  },
+                  "sampleData": {},
+                  "errorHandlingOptions": {
+                    "retryOnFailure": { "value": false },
+                    "continueOnFailure": { "value": false }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "valid": true,
+      "schemaVersion": "20",
+      "notes": []
+    }
+  ],
+  "status": "PUBLISHED"
+}

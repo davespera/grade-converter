@@ -1,0 +1,134 @@
+{
+  "name": "Grade Transfer Proxy",
+  "type": "SHARED",
+  "summary": "",
+  "description": "",
+  "tags": [],
+  "blogUrl": "",
+  "metadata": {
+    "externalId": "9F77p2NoLZ6kHro8eesfZ"
+  },
+  "author": "D E",
+  "categories": [],
+  "pieces": [
+    "@activepieces/piece-webhook"
+  ],
+  "flows": [
+    {
+      "displayName": "Grade Transfer Proxy",
+      "trigger": {
+        "name": "trigger",
+        "valid": true,
+        "displayName": "Catch Webhook",
+        "nextAction": {
+          "name": "step_1",
+          "type": "CODE",
+          "valid": true,
+          "settings": {
+            "input": {
+              "scale_id": "{{trigger.body.scale_id}}",
+              "grades": "{{trigger.body.grades}}"
+            },
+            "sampleData": {},
+            "sourceCode": {
+              "code": "export const code = async (inputs) => {\n  // grades should be an array of {subject, origin_grade} objects\n  const response = await fetch('http://backend:8000/transfer/', {\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n    },\n    body: JSON.stringify({\n      scale_id: Number(inputs.scale_id),\n      grades: inputs.grades,\n    }),\n  });\n\n  const body = await response.json();\n\n  return {\n    status: response.status,\n    body,\n  };\n};",
+              "packageJson": "{}"
+            },
+            "errorHandlingOptions": {
+              "retryOnFailure": {
+                "value": false
+              },
+              "continueOnFailure": {
+                "value": false
+              }
+            }
+          },
+          "nextAction": {
+            "name": "step_2",
+            "type": "PIECE",
+            "valid": true,
+            "settings": {
+              "input": {
+                "fields": {
+                  "body": "{{step_1.body}}",
+                  "status": "{{step_1.status}}",
+                  "headers": {}
+                },
+                "respond": "stop",
+                "responseType": "json"
+              },
+              "pieceName": "@activepieces/piece-webhook",
+              "actionName": "return_response",
+              "sampleData": {},
+              "pieceVersion": "0.1.29",
+              "propertySettings": {
+                "fields": {
+                  "type": "MANUAL",
+                  "schema": {
+                    "body": {
+                      "type": "JSON",
+                      "required": true,
+                      "displayName": "JSON Body"
+                    },
+                    "status": {
+                      "type": "NUMBER",
+                      "required": false,
+                      "displayName": "Status",
+                      "defaultValue": 200
+                    },
+                    "headers": {
+                      "type": "OBJECT",
+                      "required": false,
+                      "displayName": "Headers"
+                    }
+                  }
+                }
+              },
+              "errorHandlingOptions": {
+                "retryOnFailure": {},
+                "continueOnFailure": {}
+              }
+            },
+            "displayName": "Return Response",
+            "lastUpdatedDate": "2026-05-02T15:23:03.171Z"
+          },
+          "displayName": "Call Backend",
+          "lastUpdatedDate": "2026-05-02T15:23:03.075Z"
+        },
+        "lastUpdatedDate": "2026-05-02T15:23:03.074Z",
+        "type": "PIECE_TRIGGER",
+        "settings": {
+          "propertySettings": {
+            "authType": {
+              "type": "MANUAL"
+            },
+            "authFields": {
+              "type": "MANUAL",
+              "schema": {}
+            },
+            "liveMarkdown": {
+              "type": "MANUAL"
+            },
+            "syncMarkdown": {
+              "type": "MANUAL"
+            },
+            "testMarkdown": {
+              "type": "MANUAL"
+            }
+          },
+          "pieceName": "@activepieces/piece-webhook",
+          "pieceVersion": "0.1.29",
+          "triggerName": "catch_webhook",
+          "input": {
+            "authType": "none",
+            "authFields": {}
+          }
+        }
+      },
+      "valid": true,
+      "schemaVersion": "20",
+      "notes": []
+    }
+  ],
+  "status": "PUBLISHED"
+}

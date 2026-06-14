@@ -1,16 +1,47 @@
 <script lang="ts">
     import type { PageData } from "./$types";
+    import type { components } from "$lib/api/schema";
     import { resolve } from "$app/paths";
 
+    type AcademicScaleRead = components["schemas"]["AcademicScaleRead"];
+
     let { data, form }: { data: PageData; form?: { success?: string; error?: string } } = $props();
-    const scales = $derived(data.scales ?? []);
-    const scaleCount = $derived(scales.length);
+
+    const pageSize = data.pageSize ?? 20;
+    let loadedScales = $state(data.scales ?? []);
+    let loadingMore = $state(false);
+    let hasMore = $state((data.scales ?? []).length === pageSize);
+
+    const scaleCount = $derived(loadedScales.length);
     const equivalenceCount = $derived(
-        scales.reduce((total, scale) => total + (scale.equivalences?.length ?? 0), 0)
+        loadedScales.reduce((total, scale) => total + (scale.equivalences?.length ?? 0), 0)
     );
     const countryCount = $derived(
-        new Set(scales.map((scale) => scale.country_name).filter(Boolean)).size
+        new Set(loadedScales.map((scale) => scale.country_name).filter(Boolean)).size
     );
+
+    async function loadMore() {
+        if (loadingMore || !hasMore) return;
+        loadingMore = true;
+        const res = await fetch(`/api/scales?skip=${loadedScales.length}&limit=${pageSize}`);
+        // Cannot use openapi-fetch client due to needing to import private env vars (Docker internal URL), forbidden in the browser by SvelteKit
+        const more: AcademicScaleRead[] = res.ok ? await res.json() : [];
+        if (more.length > 0) {
+            loadedScales = [...loadedScales, ...more];
+            hasMore = more.length === pageSize;
+        } else {
+            hasMore = false;
+        }
+        loadingMore = false;
+    }
+
+    let expandedIds = $state(new Set<number>());
+    function toggleExpanded(id: number) {
+        const next = new Set(expandedIds);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        expandedIds = next;
+    }
 
     let selectedScaleIds = $state<number[]>([]);
     let selectedEquivalenceIds = $state<string[]>([]);
@@ -54,7 +85,8 @@
         <p class="lead">Browse, review, and refine equivalences with confidence.</p>
         <div class="hero-actions">
             <a href={resolve("/scales/new")} class="btn-primary">Create New Scale</a>
-            <a href={resolve("/")} class="btn-secondary">Back to Home</a>
+            <a href={resolve("/scales/search")} class="btn-secondary">Search by Country</a>
+            <a href={resolve("/")} class="btn-tertiary">Back to Home</a>
         </div>
     </div>
     <div class="hero-panel card">
@@ -77,7 +109,7 @@
     </div>
 </section>
 
-{#if scales.length === 0}
+{#if loadedScales.length === 0}
     <section class="empty-card">
         <h2>No scales yet</h2>
         <p class="lead">Create your first scale to start converting grades.</p>
@@ -113,7 +145,7 @@
     </form>
 
     <div class="scale-grid">
-        {#each scales as scale (scale.id)}
+        {#each loadedScales as scale (scale.id)}
             <article class="card scale-card">
                 <header class="scale-header">
                     <div>
@@ -127,6 +159,13 @@
                         <span class="tag">{scale.equivalences?.length ?? 0} equivalences</span>
                     </div>
                     <div class="row-actions">
+                        <button
+                            type="button"
+                            class="btn-tertiary"
+                            onclick={() => toggleExpanded(scale.id)}
+                            aria-expanded={expandedIds.has(scale.id)}>
+                            {expandedIds.has(scale.id) ? "Hide equivalences" : "Show equivalences"}
+                        </button>
                         <label class="select-pill">
                             <input
                                 type="checkbox"
@@ -158,7 +197,8 @@
                     </div>
                 </header>
 
-                {#if scale.equivalences && scale.equivalences.length > 0}
+                {#if expandedIds.has(scale.id)}
+                    {#if scale.equivalences && scale.equivalences.length > 0}
                     <div class="table-wrap">
                         <table class="data-table">
                             <thead>
@@ -207,10 +247,19 @@
                             </tbody>
                         </table>
                     </div>
-                {:else}
-                    <p class="muted">No equivalences added yet.</p>
+                    {:else}
+                        <p class="muted">No equivalences added yet.</p>
+                    {/if}
                 {/if}
             </article>
         {/each}
     </div>
+
+    {#if hasMore}
+        <div class="load-more">
+            <button class="btn-secondary" onclick={loadMore} disabled={loadingMore}>
+                {loadingMore ? "Loading…" : "Load more"}
+            </button>
+        </div>
+    {/if}
 {/if}

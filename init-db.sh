@@ -24,7 +24,8 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
 
     -- 5. Create table logic
 
-    CREATE TYPE spanishLiteralEnum AS ENUM ('APROBADO', 'NOTABLE', 'SOBRESALIENTE', 'MATRICULA');
+    -- Labels must match the Python enum member NAMES (SQLAlchemy persists names, not values)
+    CREATE TYPE spanishLiteralEnum AS ENUM ('APROBADO', 'NOTABLE', 'SOBRESALIENTE', 'MATRICULA_DE_HONOR');
     ALTER TYPE spanishLiteralEnum OWNER TO ${API_DB_USER};
 
     CREATE TABLE academic_scales (
@@ -55,30 +56,5 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     );
     ALTER TABLE api_users OWNER TO ${API_DB_USER};
 
-    -- Populate initial data (Scales)
-    INSERT INTO academic_scales (id, country_name, scale_description) VALUES
-    (1, 'AFGANISTAN', '50(1ª)-100(51ª)'),
-    (2, 'ALBANIA', '5(1ª)-10(6ª)'),
-    (3, 'ALEMANIA', 'D(1,0)(1ª)-A(4,0)(10ª)'),
-    (4, 'ALEMANIA', 'D(1,0)(1ª)-A(4,0)(6ª)'),
-    (5, 'ALEMANIA', 'GE/A(4)(1ª)-SG(1)(4ª)');
-
-    INSERT INTO grade_equivalences (scale_id, origin_grade, spanish_5_10, spanish_1_4, spanish_literal) VALUES
-    (1, '50,00', 5.00, 1, 'APROBADO'),
-    (1, '65,00', 7.00, 2, 'NOTABLE'),
-    (1, '80,00', 9.00, 3, 'SOBRESALIENTE'),
-    (1, '100,00', 10.00, 4, 'MATRICULA'),
-    (2, '5,00', 5.00, 1, 'APROBADO'),
-    (2, '9,00', 7.00, 2, 'NOTABLE'),
-    (2, '10,00', 9.00, 3, 'SOBRESALIENTE'),
-    (3, 'D', 5.00, 1, 'APROBADO'),
-    (3, 'B-', 7.00, 2, 'NOTABLE'),
-    (3, 'A', 10.00, 4, 'MATRICULA'),
-    (5, 'GE', 5.00, 1, 'APROBADO'),
-    (5, 'SG', 9.00, 3, 'SOBRESALIENTE');
-
-    -- Reset sequences after inserting explicit primary key values to prevent duplicate key errors
-    SELECT setval('academic_scales_id_seq', COALESCE((SELECT MAX(id)+1 FROM academic_scales), 1), false);
-    SELECT setval('grade_equivalences_id_seq', COALESCE((SELECT MAX(id)+1 FROM grade_equivalences), 1), false);
-    
+    -- Data is seeded by the backend (backend/seed.py) at startup or via "just seed"
 EOSQL

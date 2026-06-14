@@ -17,7 +17,7 @@
         'APROBADO',
         'NOTABLE',
         'SOBRESALIENTE',
-        'MATRICULA'
+        'MATRICULA DE HONOR'
     ];
 
     function addEquivalence() {

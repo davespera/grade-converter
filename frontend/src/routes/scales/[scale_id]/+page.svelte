@@ -3,7 +3,7 @@
 	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
 
-	const spanishLiteralOptions = ['APROBADO', 'NOTABLE', 'SOBRESALIENTE', 'MATRICULA'];
+	const spanishLiteralOptions = ['APROBADO', 'NOTABLE', 'SOBRESALIENTE', 'MATRICULA DE HONOR'];
 
 	let { data, form }: { data: PageData; form?: { success?: string; error?: string } } = $props();
 	const scale = $derived(data.scale);
