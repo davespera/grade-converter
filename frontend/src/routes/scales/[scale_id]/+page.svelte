@@ -74,7 +74,7 @@
 					action="?/updateEquivalence"
 					use:enhance={() => {
 						return async ({ update }) => {
-							await update({ reset: false, invalidateAll: true });
+							await update({ reset: false });
 						};
 					}}>
 					<input type="hidden" name="equivalence_id" value={equivalence.id} />
