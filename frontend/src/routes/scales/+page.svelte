@@ -7,10 +7,12 @@
 
     let { data, form }: { data: PageData; form?: { success?: string; error?: string } } = $props();
 
-    const pageSize = data.pageSize ?? 20;
-    let loadedScales = $state(data.scales ?? []);
+    const pageSize = $derived(data.pageSize ?? 20);
+    let extraScales = $state<AcademicScaleRead[]>([]);
+    const loadedScales = $derived([...(data.scales ?? []), ...extraScales]);
     let loadingMore = $state(false);
-    let hasMore = $state((data.scales ?? []).length === pageSize);
+    let noMore = $state(false);
+    const hasMore = $derived(!noMore && (data.scales?.length ?? 0) === pageSize);
 
     const scaleCount = $derived(loadedScales.length);
     const equivalenceCount = $derived(
@@ -27,10 +29,10 @@
         // Cannot use openapi-fetch client due to needing to import private env vars (Docker internal URL), forbidden in the browser by SvelteKit
         const more: AcademicScaleRead[] = res.ok ? await res.json() : [];
         if (more.length > 0) {
-            loadedScales = [...loadedScales, ...more];
-            hasMore = more.length === pageSize;
-        } else {
-            hasMore = false;
+            extraScales = [...extraScales, ...more];
+        }
+        if (more.length < pageSize) {
+            noMore = true;
         }
         loadingMore = false;
     }
