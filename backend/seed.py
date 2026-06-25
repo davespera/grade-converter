@@ -76,23 +76,23 @@ async def seed(
                 logger.info("Database already has %d scales, skipping seed (use --force to reseed)", existing)
                 return (0, 0)
             logger.info("Force seeding: deleting %d existing scales and their equivalences", existing)
-            await session.execute(delete(models.GradeEquivalence))
-            await session.execute(delete(models.AcademicScale))
+            await session.exec(delete(models.GradeEquivalence))
+            await session.exec(delete(models.AcademicScale))
 
         total_equivalences = 0
         pending: list[dict] = []
         for scale_row, equivalence_rows in scales:
-            result = await session.execute(
+            result = await session.exec(
                 insert(models.AcademicScale).values(**scale_row).returning(models.AcademicScale.id)
             )
             scale_id = result.scalar_one()
             pending.extend({**row, "scale_id": scale_id} for row in equivalence_rows)
             total_equivalences += len(equivalence_rows)
             if len(pending) >= INSERT_BATCH_SIZE:
-                await session.execute(insert(models.GradeEquivalence), pending)
+                await session.exec(insert(models.GradeEquivalence), params=pending)
                 pending = []
         if pending:
-            await session.execute(insert(models.GradeEquivalence), pending)
+            await session.exec(insert(models.GradeEquivalence), params=pending)
 
         await session.commit()
 
