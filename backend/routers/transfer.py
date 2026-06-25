@@ -122,13 +122,12 @@ async def convert_grade(
 
     conversion = []
 
+    scale = await crud.get_scale(db, scale_id=request.scale_id)
+
+    if not scale:
+        raise HTTPException(status_code=404, detail="Academic scale not found")
+
     for grade in request.grades:
-        # Find the scale
-        scale = await crud.get_scale(db, scale_id=request.scale_id)
-        
-        if not scale:
-            raise HTTPException(status_code=404, detail="Academic scale not found")
-        
         # Find the specific equivalence
         normalized = crud.normalize_grade(grade.origin_grade)
         equivalence = await crud.get_grade_equivalence(db, scale_id=request.scale_id, origin_grade=normalized)

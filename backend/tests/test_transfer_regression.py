@@ -19,7 +19,7 @@ os.environ.setdefault("FASTAPI_ACTIVEPIECES_API_KEY", "test-activepieces-key")
 
 AUTH_HEADERS = {"x-api-key": os.environ["FASTAPI_ACTIVEPIECES_API_KEY"]}
 
-from backend import database, models
+from backend import crud, database, models
 from backend.database import Base
 from backend.routers import transfer
 
@@ -198,6 +198,51 @@ def test_convert_grade_returns_multiple_conversions_with_subjects() -> None:
         assert payload["conversion"][1]["origin_grade"] == "B"
         assert payload["conversion"][1]["subject"] is None
         assert payload["conversion"][1]["converted_literal"] == "NOTABLE"
+    finally:
+        app.dependency_overrides.clear()
+        if client is not None:
+            client.close()
+        asyncio.run(_teardown_schema())
+
+
+def test_convert_grade_fetches_scale_once_for_many_grades(monkeypatch) -> None:
+    # Regression: the scale lookup must happen once per request, not once per
+    # grade. Three grades should still trigger a single get_scale query.
+    asyncio.run(_setup_schema_and_seed())
+
+    call_count = 0
+    real_get_scale = crud.get_scale
+
+    async def _counting_get_scale(*args, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        return await real_get_scale(*args, **kwargs)
+
+    monkeypatch.setattr(crud, "get_scale", _counting_get_scale)
+
+    app = FastAPI()
+    app.include_router(transfer.router)
+    app.dependency_overrides[database.get_database_session] = _override_db_session
+
+    client = None
+    try:
+        client = TestClient(app)
+        response = client.post(
+            "/transfer",
+            json={
+                "scale_id": 1,
+                "grades": [
+                    {"origin_grade": "A"},
+                    {"origin_grade": "B"},
+                    {"origin_grade": "A"},
+                ],
+            },
+            headers=AUTH_HEADERS,
+        )
+
+        assert response.status_code == 200
+        assert len(response.json()["conversion"]) == 3
+        assert call_count == 1
     finally:
         app.dependency_overrides.clear()
         if client is not None:

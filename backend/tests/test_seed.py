@@ -125,7 +125,7 @@ def test_seed_populates_empty_database(tmp_path: Path) -> None:
             assert scale_count == 3
 
             honor = (
-                await session.execute(
+                await session.exec(
                     select(models.GradeEquivalence).where(
                         models.GradeEquivalence.origin_grade == "100,00"
                     )
