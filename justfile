@@ -20,3 +20,5 @@ gen-api:
 gen-api-local:
     backend/venv/bin/python -m backend.export_openapi frontend/.openapi.json
     cd frontend && ./node_modules/.bin/openapi-typescript .openapi.json -o ./src/lib/api/schema.d.ts
+check-a11y:
+    docker compose --env-file .env.shared --env-file .env exec frontend npm run check -- --threshold warning --fail-on-warnings
