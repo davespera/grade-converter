@@ -122,8 +122,6 @@ async def convert_grade(
 
     conversion = []
 
-    # The scale is the same for every grade in the request, fetch it once rather
-    # than re-querying inside the loop.
     scale = await crud.get_scale(db, scale_id=request.scale_id)
 
     if not scale:

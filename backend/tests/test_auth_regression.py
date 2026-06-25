@@ -4,7 +4,8 @@ import asyncio
 import os
 from decimal import Decimal
 
-from fastapi import FastAPI
+import pytest
+from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
@@ -17,6 +18,7 @@ os.environ.setdefault("FASTAPI_ACTIVEPIECES_API_KEY", "test-activepieces-key")
 AUTH_HEADERS = {"x-api-key": os.environ["FASTAPI_ACTIVEPIECES_API_KEY"]}
 
 from backend import database, models
+from backend.auth import handle_api_key
 from backend.database import Base
 from backend.routers import transfer
 
@@ -119,6 +121,29 @@ def test_convert_grade_rejects_invalid_api_key() -> None:
         if client is not None:
             client.close()
         asyncio.run(_teardown_schema())
+
+
+def test_handle_api_key_accepts_matching_key(monkeypatch) -> None:
+    monkeypatch.setenv("FASTAPI_ACTIVEPIECES_API_KEY", "expected-key")
+    assert asyncio.run(handle_api_key("expected-key")) == "expected-key"
+
+
+def test_handle_api_key_rejects_mismatched_key(monkeypatch) -> None:
+    monkeypatch.setenv("FASTAPI_ACTIVEPIECES_API_KEY", "expected-key")
+    with pytest.raises(HTTPException) as exc_info:
+        asyncio.run(handle_api_key("wrong-key"))
+    assert exc_info.value.status_code == 401
+    assert exc_info.value.detail == "Missing or invalid API key"
+
+
+def test_handle_api_key_errors_when_server_key_unconfigured(monkeypatch) -> None:
+    # A missing server-side key is a deployment misconfiguration, not a client
+    # error: it must surface as a 500 rather than silently accepting requests.
+    monkeypatch.delenv("FASTAPI_ACTIVEPIECES_API_KEY", raising=False)
+    with pytest.raises(HTTPException) as exc_info:
+        asyncio.run(handle_api_key("any-key"))
+    assert exc_info.value.status_code == 500
+    assert exc_info.value.detail == "API key authentication is not configured"
 
 
 def test_convert_grade_allows_valid_api_key() -> None:
