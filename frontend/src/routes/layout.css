@@ -218,7 +218,7 @@ h3 { font-size: 1.35rem; }
 }
 
 .btn-primary {
-	background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 55%, var(--accent-soft) 100%);
+	background: linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 80%, #000) 100%);
 	color: #ffffff;
 	box-shadow: 0 12px 26px var(--accent-glow);
 }
@@ -472,17 +472,18 @@ textarea:focus {
 	color: var(--muted);
 }
 
-.error-text {
-	color: var(--danger);
-	font-size: 0.85rem;
-}
-
 .form-errors {
 	border-radius: var(--radius-md);
 	border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--border));
 	background: color-mix(in srgb, var(--danger) 12%, var(--surface));
 	padding: 1rem 1.2rem;
 	color: var(--danger);
+}
+
+.form-errors::before {
+	content: '\26A0'; /* ⚠ warning sign */
+	margin-right: 0.5rem;
+	font-weight: 700;
 }
 
 .form-errors ul {
@@ -497,6 +498,12 @@ textarea:focus {
 	padding: 0.9rem 1.1rem;
 	color: var(--success);
 	font-weight: 600;
+}
+
+.success-banner::before {
+	content: '\2713'; /* ✓ check mark */
+	margin-right: 0.5rem;
+	font-weight: 700;
 }
 
 .equivalence-row {
@@ -573,7 +580,7 @@ textarea:focus {
 	padding: 0.5rem 0.9rem;
 	border-radius: 999px;
 	border: 1px solid color-mix(in srgb, var(--danger) 50%, var(--border));
-	background: #fff5f1;
+	background: var(--surface);
 	color: var(--danger);
 	font-weight: 600;
 	cursor: pointer;
