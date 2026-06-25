@@ -31,7 +31,7 @@
             },
             "sampleData": {},
             "sourceCode": {
-              "code": "export const code = async (inputs) => {\n  const response = await fetch('http://backend:8000/transfer/?format=xlsx', {\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n    },\n    body: JSON.stringify({\n      scale_id: Number(inputs.scale_id),\n      grades: inputs.grades,\n    }),\n  });\n\n  const arrayBuffer = await response.arrayBuffer();\n  const base64 = Buffer.from(arrayBuffer).toString('base64');\n\n  return {\n    status: response.status,\n    file: base64,\n    contentType: response.headers.get('content-type'),\n  };\n};",
+              "code": "export const code = async (inputs) => {\n  const response = await fetch('http://backend:8000/transfer/?format=xlsx', {\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n      'x-api-key': process.env.FASTAPI_ACTIVEPIECES_API_KEY || '',\n    },\n    body: JSON.stringify({\n      scale_id: Number(inputs.scale_id),\n      grades: inputs.grades,\n    }),\n  });\n\n  const arrayBuffer = await response.arrayBuffer();\n  const base64 = Buffer.from(arrayBuffer).toString('base64');\n\n  return {\n    status: response.status,\n    file: base64,\n    contentType: response.headers.get('content-type'),\n  };\n};",
               "packageJson": "{}"
             },
             "errorHandlingOptions": {

@@ -21,16 +21,86 @@
         "valid": true,
         "displayName": "New File in OneDrive",
         "nextAction": {
-          "name": "step_0",
+          "name": "step_1",
           "skip": false,
-          "type": "CODE",
+          "type": "PIECE",
           "valid": true,
           "settings": {
-            "input": {},
+            "input": {
+              "url": "http://backend:8000/transfer/?format=xlsx",
+              "body": {
+                "data": "{\n  \"scale_id\": {{trigger.scale_id}},\n  \"grades\": {{trigger.grades}}\n}"
+              },
+              "method": "POST",
+              "headers": {
+                "Content-Type": "application/json"
+              },
+              "authType": "NONE",
+              "body_type": "json",
+              "use_proxy": false,
+              "authFields": {},
+              "failureMode": "continue_all",
+              "queryParams": {},
+              "proxy_settings": {},
+              "followRedirects": false,
+              "response_is_binary": false
+            },
+            "pieceName": "@activepieces/piece-http",
+            "actionName": "send_request",
             "sampleData": {},
-            "sourceCode": {
-              "code": "export const code = async (inputs) => {\n  return {\n    apiKey: process.env.FASTAPI_ACTIVEPIECES_API_KEY || \"\",\n  };\n};",
-              "packageJson": "{}"
+            "pieceVersion": "0.11.9",
+            "propertySettings": {
+              "url": {
+                "type": "MANUAL"
+              },
+              "body": {
+                "type": "MANUAL",
+                "schema": {
+                  "data": {
+                    "type": "JSON",
+                    "required": true,
+                    "displayName": "JSON Body"
+                  }
+                }
+              },
+              "method": {
+                "type": "MANUAL"
+              },
+              "headers": {
+                "type": "MANUAL"
+              },
+              "timeout": {
+                "type": "MANUAL"
+              },
+              "authType": {
+                "type": "MANUAL"
+              },
+              "body_type": {
+                "type": "MANUAL"
+              },
+              "use_proxy": {
+                "type": "MANUAL"
+              },
+              "authFields": {
+                "type": "MANUAL",
+                "schema": {}
+              },
+              "failureMode": {
+                "type": "MANUAL"
+              },
+              "queryParams": {
+                "type": "MANUAL"
+              },
+              "proxy_settings": {
+                "type": "MANUAL",
+                "schema": {}
+              },
+              "followRedirects": {
+                "type": "MANUAL"
+              },
+              "response_is_binary": {
+                "type": "MANUAL"
+              }
             },
             "errorHandlingOptions": {
               "retryOnFailure": {
@@ -41,91 +111,34 @@
               }
             }
           },
-          "displayName": "Resolve API Key",
-          "lastUpdatedDate": "2026-05-31T00:00:00.000Z",
           "nextAction": {
-            "name": "step_1",
-            "skip": false,
+            "name": "step_2",
             "type": "PIECE",
             "valid": true,
+            "skip": false,
+            "displayName": "Upload Result to OneDrive",
+            "lastUpdatedDate": "2026-05-31T00:00:00.000Z",
             "settings": {
+              "pieceName": "@activepieces/piece-microsoft-onedrive",
+              "pieceVersion": "~0.3.0",
+              "actionName": "upload_onedrive_file",
               "input": {
-                "url": "http://backend:8000/transfer/?format=xlsx",
-                "body": {
-                  "data": "{\n  \"scale_id\": {{trigger.scale_id}},\n  \"grades\": {{trigger.grades}}\n}"
-                },
-                "method": "POST",
-                "headers": {
-                  "Content-Type": "application/json",
-                  "x-api-key": "{{step_0.apiKey}}"
-                },
-                "authType": "NONE",
-                "body_type": "json",
-                "use_proxy": false,
-                "authFields": {},
-                "failureMode": "continue_all",
-                "queryParams": {},
-                "proxy_settings": {},
-                "followRedirects": false,
-                "response_is_binary": false
+                "file": "{{step_1.body}}",
+                "fileName": "transfer-result.xlsx",
+                "parentFolder": ""
               },
-              "pieceName": "@activepieces/piece-http",
-              "actionName": "send_request",
-              "sampleData": {},
-              "pieceVersion": "0.11.9",
               "propertySettings": {
-                "url": {
+                "file": {
                   "type": "MANUAL"
                 },
-                "body": {
-                  "type": "MANUAL",
-                  "schema": {
-                    "data": {
-                      "type": "JSON",
-                      "required": true,
-                      "displayName": "JSON Body"
-                    }
-                  }
-                },
-                "method": {
+                "fileName": {
                   "type": "MANUAL"
                 },
-                "headers": {
-                  "type": "MANUAL"
-                },
-                "timeout": {
-                  "type": "MANUAL"
-                },
-                "authType": {
-                  "type": "MANUAL"
-                },
-                "body_type": {
-                  "type": "MANUAL"
-                },
-                "use_proxy": {
-                  "type": "MANUAL"
-                },
-                "authFields": {
-                  "type": "MANUAL",
-                  "schema": {}
-                },
-                "failureMode": {
-                  "type": "MANUAL"
-                },
-                "queryParams": {
-                  "type": "MANUAL"
-                },
-                "proxy_settings": {
-                  "type": "MANUAL",
-                  "schema": {}
-                },
-                "followRedirects": {
-                  "type": "MANUAL"
-                },
-                "response_is_binary": {
+                "parentFolder": {
                   "type": "MANUAL"
                 }
               },
+              "sampleData": {},
               "errorHandlingOptions": {
                 "retryOnFailure": {
                   "value": false
@@ -134,48 +147,10 @@
                   "value": false
                 }
               }
-            },
-            "nextAction": {
-              "name": "step_2",
-              "type": "PIECE",
-              "valid": true,
-              "skip": false,
-              "displayName": "Upload Result to OneDrive",
-              "lastUpdatedDate": "2026-05-31T00:00:00.000Z",
-              "settings": {
-                "pieceName": "@activepieces/piece-microsoft-onedrive",
-                "pieceVersion": "~0.3.0",
-                "actionName": "upload_onedrive_file",
-                "input": {
-                  "file": "{{step_1.body}}",
-                  "fileName": "transfer-result.xlsx",
-                  "parentFolder": ""
-                },
-                "propertySettings": {
-                  "file": {
-                    "type": "MANUAL"
-                  },
-                  "fileName": {
-                    "type": "MANUAL"
-                  },
-                  "parentFolder": {
-                    "type": "MANUAL"
-                  }
-                },
-                "sampleData": {},
-                "errorHandlingOptions": {
-                  "retryOnFailure": {
-                    "value": false
-                  },
-                  "continueOnFailure": {
-                    "value": false
-                  }
-                }
-              }
-            },
-            "displayName": "Send HTTP request",
-            "lastUpdatedDate": "2026-05-02T16:50:32.121Z"
-          }
+            }
+          },
+          "displayName": "Send HTTP request",
+          "lastUpdatedDate": "2026-05-02T16:50:32.121Z"
         },
         "lastUpdatedDate": "2026-05-02T16:50:32.090Z",
         "type": "PIECE_TRIGGER",

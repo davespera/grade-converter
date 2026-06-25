@@ -1,0 +1,556 @@
+{
+  "name": "Grade Transfer AI (OneDrive, Pieces)",
+  "type": "SHARED",
+  "summary": "",
+  "description": "Ingest a transcript PDF dropped in OneDrive, use the Anthropic Claude piece to extract the issuing country and the grades, resolve the matching scale via POST /scales/match (ranked by grade coverage), then run the transfer for the covered grades. A Router uploads a needs-review JSON instead when no scale can be confidently resolved. Backend calls are done with the HTTP piece (Pieces variant).",
+  "tags": [],
+  "blogUrl": "",
+  "metadata": {
+    "externalId": "ai_GradeTransfer_OneDrive_Pieces"
+  },
+  "author": "D E",
+  "categories": [],
+  "pieces": [
+    "@activepieces/piece-microsoft-onedrive",
+    "@activepieces/piece-claude",
+    "@activepieces/piece-http"
+  ],
+  "flows": [
+    {
+      "displayName": "Grade Transfer AI (OneDrive, Pieces)",
+      "trigger": {
+        "name": "trigger",
+        "valid": true,
+        "displayName": "New File in OneDrive",
+        "type": "PIECE_TRIGGER",
+        "settings": {
+          "pieceName": "@activepieces/piece-microsoft-onedrive",
+          "pieceVersion": "~0.3.0",
+          "triggerName": "new_file",
+          "input": {
+            "parentFolder": ""
+          },
+          "propertySettings": {
+            "parentFolder": {
+              "type": "MANUAL"
+            }
+          }
+        },
+        "lastUpdatedDate": "2026-06-11T00:00:00.000Z",
+        "nextAction": {
+          "name": "step_0",
+          "type": "CODE",
+          "valid": true,
+          "skip": false,
+          "displayName": "Resolve API Key",
+          "lastUpdatedDate": "2026-06-11T00:00:00.000Z",
+          "settings": {
+            "input": {},
+            "sampleData": {},
+            "sourceCode": {
+              "code": "export const code = async () => {\n  return { apiKey: process.env.FASTAPI_ACTIVEPIECES_API_KEY || \"\" };\n};",
+              "packageJson": "{}"
+            },
+            "errorHandlingOptions": {
+              "retryOnFailure": {
+                "value": false
+              },
+              "continueOnFailure": {
+                "value": false
+              }
+            }
+          },
+          "nextAction": {
+            "name": "step_1",
+            "type": "PIECE",
+            "valid": true,
+            "skip": false,
+            "displayName": "Download PDF from OneDrive",
+            "lastUpdatedDate": "2026-06-11T00:00:00.000Z",
+            "settings": {
+              "pieceName": "@activepieces/piece-microsoft-onedrive",
+              "pieceVersion": "~0.3.0",
+              "actionName": "download_file",
+              "input": {
+                "lookupBy": "id",
+                "fileIdentifier": "{{trigger.id}}"
+              },
+              "propertySettings": {
+                "lookupBy": {
+                  "type": "MANUAL"
+                },
+                "fileIdentifier": {
+                  "type": "MANUAL"
+                }
+              },
+              "sampleData": {},
+              "errorHandlingOptions": {
+                "retryOnFailure": {
+                  "value": false
+                },
+                "continueOnFailure": {
+                  "value": false
+                }
+              }
+            },
+            "nextAction": {
+              "name": "step_2",
+              "type": "PIECE",
+              "valid": true,
+              "skip": false,
+              "displayName": "Extract Grades with Claude",
+              "lastUpdatedDate": "2026-06-11T00:00:00.000Z",
+              "settings": {
+                "pieceName": "@activepieces/piece-claude",
+                "pieceVersion": "~0.4.7",
+                "actionName": "extract-structured-data",
+                "input": {
+                  "model": "claude-sonnet-4-6",
+                  "text": "",
+                  "image": "{{step_1.data}}",
+                  "prompt": "You are reading an academic transcript or diploma PDF issued by a non-Spanish university. Extract the following:\n1. country: the country where the issuing institution is located, written as the official Spanish-language country name in UPPERCASE (e.g. United States -> ESTADOS UNIDOS DE AMERICA, Germany -> ALEMANIA, United Kingdom -> REINO UNIDO). If it is not explicitly stated, infer it from the institution, language or address.\n2. grading_system: a short description of the grading scale used (e.g. 'US 4.0 GPA letter grades', 'German 1,0-5,0'), if identifiable; otherwise an empty string.\n3. grade_type: 'numerico' if grades are numbers, 'literal' if letters or words, 'mixto' if both.\n4. grades: every subject together with its grade. Copy the grade exactly as written, except normalise the decimal separator to a comma (3.7 -> 3,7) so it matches the reference dataset. Do not convert, round or translate the grade.",
+                  "mode": "advanced",
+                  "schema": {
+                    "fields": {
+                      "type": "object",
+                      "properties": {
+                        "country": {
+                          "type": "string",
+                          "description": "Issuing country as the official Spanish-language name in UPPERCASE (e.g. ALEMANIA, ESTADOS UNIDOS DE AMERICA)"
+                        },
+                        "grading_system": {
+                          "type": "string",
+                          "description": "Short description of the grading scale used, if identifiable; otherwise an empty string"
+                        },
+                        "grade_type": {
+                          "type": "string",
+                          "description": "'numerico', 'literal' or 'mixto'"
+                        },
+                        "grades": {
+                          "type": "array",
+                          "description": "All subjects and their grades found in the transcript",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "subject": {
+                                "type": "string",
+                                "description": "The subject/course name"
+                              },
+                              "origin_grade": {
+                                "type": "string",
+                                "description": "The grade exactly as written (decimal separator normalised to a comma)"
+                              }
+                            },
+                            "required": [
+                              "origin_grade"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "country",
+                        "grades"
+                      ]
+                    }
+                  },
+                  "maxTokens": 4096
+                },
+                "propertySettings": {
+                  "model": {
+                    "type": "MANUAL"
+                  },
+                  "text": {
+                    "type": "MANUAL"
+                  },
+                  "image": {
+                    "type": "MANUAL"
+                  },
+                  "prompt": {
+                    "type": "MANUAL"
+                  },
+                  "mode": {
+                    "type": "MANUAL"
+                  },
+                  "schema": {
+                    "type": "MANUAL"
+                  },
+                  "maxTokens": {
+                    "type": "MANUAL"
+                  }
+                },
+                "sampleData": {},
+                "errorHandlingOptions": {
+                  "retryOnFailure": {
+                    "value": false
+                  },
+                  "continueOnFailure": {
+                    "value": false
+                  }
+                }
+              },
+              "nextAction": {
+                "name": "step_3",
+                "type": "CODE",
+                "valid": true,
+                "skip": false,
+                "displayName": "Prepare match input",
+                "lastUpdatedDate": "2026-06-13T00:00:00.000Z",
+                "settings": {
+                  "input": {
+                    "country": "{{step_2.country}}",
+                    "grades": "{{step_2.grades}}"
+                  },
+                  "sampleData": {},
+                  "sourceCode": {
+                    "code": "export const code = async (inputs) => {\n  // Reduce the extracted grades to the distinct origin-grade strings the\n  // /scales/match endpoint expects.\n  const grades = Array.isArray(inputs.grades) ? inputs.grades : [];\n  const distinct = [...new Set(grades.map((g) => g.origin_grade).filter((v) => v != null))];\n  return { country: inputs.country || '', grades: distinct };\n};",
+                    "packageJson": "{}"
+                  },
+                  "errorHandlingOptions": {
+                    "retryOnFailure": {
+                      "value": false
+                    },
+                    "continueOnFailure": {
+                      "value": false
+                    }
+                  }
+                },
+                "nextAction": {
+                  "name": "step_4",
+                  "type": "PIECE",
+                  "valid": true,
+                  "skip": false,
+                  "displayName": "Search scale (/scales/match)",
+                  "lastUpdatedDate": "2026-06-13T00:00:00.000Z",
+                  "settings": {
+                    "pieceName": "@activepieces/piece-http",
+                    "pieceVersion": "0.11.9",
+                    "actionName": "send_request",
+                    "input": {
+                      "url": "http://backend:8000/scales/match",
+                      "body": {
+                        "data": "{\n  \"country\": \"{{step_3.country}}\",\n  \"grades\": {{step_3.grades}}\n}"
+                      },
+                      "method": "POST",
+                      "headers": {
+                        "Content-Type": "application/json"
+                      },
+                      "authType": "NONE",
+                      "body_type": "json",
+                      "use_proxy": false,
+                      "authFields": {},
+                      "failureMode": "continue_all",
+                      "queryParams": {},
+                      "proxy_settings": {},
+                      "followRedirects": false,
+                      "response_is_binary": false
+                    },
+                    "propertySettings": {
+                      "url": {
+                        "type": "MANUAL"
+                      },
+                      "body": {
+                        "type": "MANUAL",
+                        "schema": {
+                          "data": {
+                            "type": "JSON",
+                            "required": true,
+                            "displayName": "JSON Body"
+                          }
+                        }
+                      },
+                      "method": {
+                        "type": "MANUAL"
+                      },
+                      "headers": {
+                        "type": "MANUAL"
+                      },
+                      "timeout": {
+                        "type": "MANUAL"
+                      },
+                      "authType": {
+                        "type": "MANUAL"
+                      },
+                      "body_type": {
+                        "type": "MANUAL"
+                      },
+                      "use_proxy": {
+                        "type": "MANUAL"
+                      },
+                      "authFields": {
+                        "type": "MANUAL",
+                        "schema": {}
+                      },
+                      "failureMode": {
+                        "type": "MANUAL"
+                      },
+                      "queryParams": {
+                        "type": "MANUAL"
+                      },
+                      "proxy_settings": {
+                        "type": "MANUAL",
+                        "schema": {}
+                      },
+                      "followRedirects": {
+                        "type": "MANUAL"
+                      },
+                      "response_is_binary": {
+                        "type": "MANUAL"
+                      }
+                    },
+                    "sampleData": {},
+                    "errorHandlingOptions": {
+                      "retryOnFailure": {
+                        "value": false
+                      },
+                      "continueOnFailure": {
+                        "value": false
+                      }
+                    }
+                  },
+                  "nextAction": {
+                    "name": "step_5",
+                    "type": "CODE",
+                    "valid": true,
+                    "skip": false,
+                    "displayName": "Resolve scale & confidence",
+                    "lastUpdatedDate": "2026-06-13T00:00:00.000Z",
+                    "settings": {
+                      "input": {
+                        "candidates": "{{step_4.body}}",
+                        "grades": "{{step_2.grades}}",
+                        "country": "{{step_2.country}}",
+                        "grading_system": "{{step_2.grading_system}}",
+                        "grade_type": "{{step_2.grade_type}}",
+                        "file_name": "{{trigger.name}}"
+                      },
+                      "sampleData": {},
+                      "sourceCode": {
+                        "code": "export const code = async (inputs) => {\n  // Decide, from the ranked /scales/match candidates, whether we can confidently\n  // pick a scale. If not, build a needs-review artifact instead of guessing.\n  const MIN_COVERAGE = 1.0;\n  const candidates = Array.isArray(inputs.candidates) ? inputs.candidates : [];\n  const grades = Array.isArray(inputs.grades) ? inputs.grades : [];\n\n  const rawName = inputs.file_name || 'transcript';\n  const base = rawName.replace(/\\.[^/.]+$/, '') || 'transcript';\n\n  const top = candidates[0];\n  const second = candidates[1];\n  let reason = null;\n  if (!top || top.coverage < MIN_COVERAGE) {\n    reason = top ? 'low_coverage' : 'no_candidates';\n  } else if (\n    second &&\n    second.coverage === top.coverage &&\n    second.scale_total_grades === top.scale_total_grades\n  ) {\n    reason = 'ambiguous';\n  }\n\n  if (reason) {\n    const review = {\n      status: 'NEEDS_REVIEW',\n      reason,\n      extracted: {\n        country: inputs.country || null,\n        grading_system: inputs.grading_system || null,\n        grade_type: inputs.grade_type || null,\n        grades,\n      },\n      candidates: candidates.slice(0, 5),\n      instructions:\n        'Pick the correct scale_id and re-run the transfer manually, or fix the country in the document and re-upload.',\n    };\n    return {\n      confident: false,\n      needsReview: true,\n      reason,\n      scale_id: null,\n      coveredGrades: [],\n      reviewFile: Buffer.from(JSON.stringify(review, null, 2)).toString('base64'),\n      fileName: `${base}-NEEDS-REVIEW.json`,\n    };\n  }\n\n  // Confident: transfer only the grades the matched scale actually covers.\n  const unmatched = new Set(top.unmatched_grades || []);\n  const coveredGrades = grades.filter((g) => !unmatched.has(g.origin_grade));\n  return {\n    confident: true,\n    needsReview: false,\n    reason: null,\n    scale_id: top.scale_id,\n    coveredGrades,\n    reviewFile: '',\n    fileName: `${base}-transfer.xlsx`,\n  };\n};",
+                        "packageJson": "{}"
+                      },
+                      "errorHandlingOptions": {
+                        "retryOnFailure": {
+                          "value": false
+                        },
+                        "continueOnFailure": {
+                          "value": false
+                        }
+                      }
+                    },
+                    "nextAction": {
+                      "name": "step_6",
+                      "type": "ROUTER",
+                      "valid": true,
+                      "skip": false,
+                      "displayName": "Confident scale match?",
+                      "lastUpdatedDate": "2026-06-13T00:00:00.000Z",
+                      "children": [
+                        {
+                          "name": "step_7",
+                          "type": "PIECE",
+                          "valid": true,
+                          "skip": false,
+                          "displayName": "Send HTTP request (/transfer)",
+                          "lastUpdatedDate": "2026-06-13T00:00:00.000Z",
+                          "settings": {
+                            "pieceName": "@activepieces/piece-http",
+                            "pieceVersion": "0.11.9",
+                            "actionName": "send_request",
+                            "input": {
+                              "url": "http://backend:8000/transfer/?format=xlsx",
+                              "body": {
+                                "data": "{\n  \"scale_id\": {{step_5.scale_id}},\n  \"grades\": {{step_5.coveredGrades}}\n}"
+                              },
+                              "method": "POST",
+                              "headers": {
+                                "Content-Type": "application/json",
+                                "x-api-key": "{{step_0.apiKey}}"
+                              },
+                              "authType": "NONE",
+                              "body_type": "json",
+                              "use_proxy": false,
+                              "authFields": {},
+                              "failureMode": "continue_all",
+                              "queryParams": {},
+                              "proxy_settings": {},
+                              "followRedirects": false,
+                              "response_is_binary": true
+                            },
+                            "propertySettings": {
+                              "url": {
+                                "type": "MANUAL"
+                              },
+                              "body": {
+                                "type": "MANUAL",
+                                "schema": {
+                                  "data": {
+                                    "type": "JSON",
+                                    "required": true,
+                                    "displayName": "JSON Body"
+                                  }
+                                }
+                              },
+                              "method": {
+                                "type": "MANUAL"
+                              },
+                              "headers": {
+                                "type": "MANUAL"
+                              },
+                              "timeout": {
+                                "type": "MANUAL"
+                              },
+                              "authType": {
+                                "type": "MANUAL"
+                              },
+                              "body_type": {
+                                "type": "MANUAL"
+                              },
+                              "use_proxy": {
+                                "type": "MANUAL"
+                              },
+                              "authFields": {
+                                "type": "MANUAL",
+                                "schema": {}
+                              },
+                              "failureMode": {
+                                "type": "MANUAL"
+                              },
+                              "queryParams": {
+                                "type": "MANUAL"
+                              },
+                              "proxy_settings": {
+                                "type": "MANUAL",
+                                "schema": {}
+                              },
+                              "followRedirects": {
+                                "type": "MANUAL"
+                              },
+                              "response_is_binary": {
+                                "type": "MANUAL"
+                              }
+                            },
+                            "sampleData": {},
+                            "errorHandlingOptions": {
+                              "retryOnFailure": {
+                                "value": false
+                              },
+                              "continueOnFailure": {
+                                "value": false
+                              }
+                            }
+                          },
+                          "nextAction": {
+                            "name": "step_8",
+                            "type": "PIECE",
+                            "valid": true,
+                            "skip": false,
+                            "displayName": "Upload Result to OneDrive",
+                            "lastUpdatedDate": "2026-06-13T00:00:00.000Z",
+                            "settings": {
+                              "pieceName": "@activepieces/piece-microsoft-onedrive",
+                              "pieceVersion": "~0.3.0",
+                              "actionName": "upload_onedrive_file",
+                              "input": {
+                                "file": "{{step_7.body}}",
+                                "fileName": "{{step_5.fileName}}",
+                                "parentFolder": ""
+                              },
+                              "propertySettings": {
+                                "file": {
+                                  "type": "MANUAL"
+                                },
+                                "fileName": {
+                                  "type": "MANUAL"
+                                },
+                                "parentFolder": {
+                                  "type": "MANUAL"
+                                }
+                              },
+                              "sampleData": {},
+                              "errorHandlingOptions": {
+                                "retryOnFailure": {
+                                  "value": false
+                                },
+                                "continueOnFailure": {
+                                  "value": false
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "name": "step_9",
+                          "type": "PIECE",
+                          "valid": true,
+                          "skip": false,
+                          "displayName": "Upload Needs-Review to OneDrive",
+                          "lastUpdatedDate": "2026-06-13T00:00:00.000Z",
+                          "settings": {
+                            "pieceName": "@activepieces/piece-microsoft-onedrive",
+                            "pieceVersion": "~0.3.0",
+                            "actionName": "upload_onedrive_file",
+                            "input": {
+                              "file": "{{step_5.reviewFile}}",
+                              "fileName": "{{step_5.fileName}}",
+                              "parentFolder": ""
+                            },
+                            "propertySettings": {
+                              "file": {
+                                "type": "MANUAL"
+                              },
+                              "fileName": {
+                                "type": "MANUAL"
+                              },
+                              "parentFolder": {
+                                "type": "MANUAL"
+                              }
+                            },
+                            "sampleData": {},
+                            "errorHandlingOptions": {
+                              "retryOnFailure": {
+                                "value": false
+                              },
+                              "continueOnFailure": {
+                                "value": false
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "settings": {
+                        "branches": [
+                          {
+                            "branchName": "Confident match",
+                            "branchType": "CONDITION",
+                            "conditions": [
+                              [
+                                {
+                                  "operator": "BOOLEAN_IS_TRUE",
+                                  "firstValue": "{{step_5.confident}}"
+                                }
+                              ]
+                            ]
+                          },
+                          {
+                            "branchName": "Otherwise",
+                            "branchType": "FALLBACK"
+                          }
+                        ],
+                        "sampleData": {},
+                        "executionType": "EXECUTE_FIRST_MATCH"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "valid": true,
+      "schemaVersion": "20",
+      "notes": []
+    }
+  ],
+  "status": "PUBLISHED"
+}
