@@ -67,6 +67,11 @@ export const actions = {
 			return { status: 500, error: "Failed to create some equivalences" };
 		}
 
-		return { success: true };
+		return {
+			success: true,
+			scaleId: scale_id,
+			countryName: country_name,
+			equivalenceCount: equivalences.length,
+		};
 	}
 }
