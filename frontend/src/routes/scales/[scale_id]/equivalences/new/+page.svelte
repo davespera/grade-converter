@@ -92,7 +92,8 @@
                         type="button"
                         class="btn-danger"
                         onclick={() => removeEquivalence(index)}
-                        disabled={equivalences.length <= 1}>
+                        disabled={equivalences.length <= 1}
+                        aria-label={`Remove equivalence ${index + 1}`}>
                         Remove
                     </button>
                 </div>

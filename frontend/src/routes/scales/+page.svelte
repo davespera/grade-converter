@@ -192,7 +192,7 @@
                                 )
                             }>
                             <input type="hidden" name="scale_id" value={scale.id} />
-                            <button type="submit" class="btn-danger">Delete scale</button>
+                            <button type="submit" class="btn-danger" aria-label={`Delete ${scale.country_name} scale`}>Delete scale</button>
                         </form>
                     </div>
                 </header>
@@ -239,7 +239,7 @@
                                                 }>
                                                 <input type="hidden" name="scale_id" value={scale.id} />
                                                 <input type="hidden" name="equivalence_id" value={equivalence.id} />
-                                                <button type="submit" class="btn-danger btn-small">Delete</button>
+                                                <button type="submit" class="btn-danger btn-small" aria-label={`Delete ${equivalence.origin_grade} equivalence from ${scale.country_name}`}>Delete</button>
                                             </form>
                                         </td>
                                     </tr>

@@ -129,7 +129,7 @@
                         </label>
                     </div>
                     <div class="equivalence-actions">
-                        <button type="button" class="btn btn-ghost" onclick={() => removeEquivalence(index)}>
+                        <button type="button" class="btn btn-ghost" onclick={() => removeEquivalence(index)} aria-label={`Remove equivalence row ${index + 1}`}>
                             Remove row
                         </button>
                     </div>

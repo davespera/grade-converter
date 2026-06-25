@@ -41,7 +41,7 @@
 				><span class="brand-mark">GC</span>
 				<span>Grade Converter</span></a
 			>
-			<nav class="nav-links">
+			<nav class="nav-links" aria-label="Main navigation">
 				<a class="btn-secondary" href={resolve('/scales')}>Scales</a>
 				<a class="btn-primary" href={resolve('/scales/new')}>New Scale</a>
 				<button

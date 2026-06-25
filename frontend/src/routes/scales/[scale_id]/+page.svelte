@@ -34,7 +34,7 @@
 					`Delete ${scale?.country_name} scale? This removes all equivalences.`
 				)
 			}>
-			<button type="submit" class="btn-danger">Delete scale</button>
+			<button type="submit" class="btn-danger" aria-label={`Delete ${scale?.country_name} scale`}>Delete scale</button>
 		</form>
 	</div>
 </section>
@@ -103,6 +103,7 @@
 									form={updateFormId}
 									name="origin_grade"
 									value={equivalence.origin_grade}
+									aria-label={`Origin grade for ${equivalence.origin_grade} equivalence`}
 									required />
 							</td>
 							<td>
@@ -114,6 +115,7 @@
 									min="1"
 									max="4"
 									value={equivalence.spanish_1_4 ?? ''}
+									aria-label={`Spanish 1–4 grade for ${equivalence.origin_grade} equivalence`}
 									placeholder="Optional" />
 							</td>
 							<td>
@@ -122,10 +124,11 @@
 									form={updateFormId}
 									name="spanish_5_10"
 									value={equivalence.spanish_5_10}
+									aria-label={`Spanish 5–10 grade for ${equivalence.origin_grade} equivalence`}
 									required />
 							</td>
 							<td>
-								<select class="equivalence-input" form={updateFormId} name="spanish_literal" value={equivalence.spanish_literal} required>
+								<select class="equivalence-input" form={updateFormId} name="spanish_literal" value={equivalence.spanish_literal} aria-label={`Spanish literal for ${equivalence.origin_grade} equivalence`} required>
 									<option value="" disabled>Select literal</option>
 									{#each spanishLiteralOptions as option (option)}
 										<option value={option}>{option}</option>
@@ -133,7 +136,7 @@
 								</select>
 							</td>
 							<td class="action-col">
-								<button type="submit" form={updateFormId} class="btn-primary btn-small">Save</button>
+								<button type="submit" form={updateFormId} class="btn-primary btn-small" aria-label={`Save changes to ${equivalence.origin_grade} equivalence`}>Save</button>
 							</td>
 							<td class="action-col">
 								<form
@@ -146,7 +149,7 @@
 										)
 									}>
 									<input type="hidden" name="equivalence_id" value={equivalence.id} />
-									<button type="submit" class="btn-danger btn-small">Delete</button>
+									<button type="submit" class="btn-danger btn-small" aria-label={`Delete ${equivalence.origin_grade} equivalence`}>Delete</button>
 								</form>
 							</td>
 						</tr>
