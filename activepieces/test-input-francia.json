@@ -1,0 +1,13 @@
+{
+  "country": "FRANCIA",
+  "grades": [
+    { "subject": "Introduction à l'Informatique Graphique", "origin_grade": "13,625" },
+    { "subject": "Base de données et Programmation WEB", "origin_grade": "11,419" },
+    { "subject": "Interactions humain-machine et ergonomie", "origin_grade": "14,25" },
+    { "subject": "Bases de données avancées", "origin_grade": "10,589" },
+    { "subject": "Préparer sa candidature, connaitre le marché du travail", "origin_grade": "13" },
+    { "subject": "Comportement en entreprise", "origin_grade": "18,3" },
+    { "subject": "Gestion de projets et management", "origin_grade": "14,5" },
+    { "subject": "Droit du travail et création et d'entreprise", "origin_grade": "15,5" }
+  ]
+}

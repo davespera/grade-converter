@@ -1,0 +1,136 @@
+{
+  "name": "Grade Transfer Test (JS)",
+  "type": "SHARED",
+  "summary": "",
+  "description": "Test-only flow for the scale matching and grade transfer backend, with no OneDrive or AI integration. A webhook receives { country, grades } directly (as the AI step would have produced), resolves the matching scale via POST /scales/match (ranked by grade coverage), then runs the transfer for the covered grades and returns the result. If no scale can be confidently resolved, a needs-review JSON is returned instead. Backend calls are done with a CODE step (JS variant).",
+  "tags": [],
+  "blogUrl": "",
+  "metadata": {
+    "externalId": "test_GradeTransfer_JS"
+  },
+  "author": "D E",
+  "categories": [],
+  "pieces": [
+    "@activepieces/piece-webhook"
+  ],
+  "flows": [
+    {
+      "displayName": "Grade Transfer Test (JS)",
+      "trigger": {
+        "name": "trigger",
+        "valid": true,
+        "displayName": "Catch Webhook",
+        "nextAction": {
+          "name": "step_1",
+          "type": "CODE",
+          "valid": true,
+          "skip": false,
+          "displayName": "Resolve scale & Call Backend",
+          "lastUpdatedDate": "2026-06-27T00:00:00.000Z",
+          "settings": {
+            "input": {
+              "country": "{{trigger.body.country}}",
+              "grades": "{{trigger.body.grades}}"
+            },
+            "sampleData": {},
+            "sourceCode": {
+              "code": "export const code = async (inputs) => {\n  // Test-only flow: scale matching + grade transfer, no OneDrive/AI.\n  // inputs.country: Spanish-language country name (e.g. ALEMANIA)\n  // inputs.grades: array of { subject, origin_grade } objects\n  const BACKEND = 'http://backend:8000';\n  const MIN_COVERAGE = 1.0;\n\n  const grades = Array.isArray(inputs.grades) ? inputs.grades : [];\n  const distinct = [...new Set(grades.map((g) => g.origin_grade).filter((v) => v != null))];\n\n  // 1. Resolve the scale from country + observed grades (unauthenticated endpoint).\n  const matchRes = await fetch(`${BACKEND}/scales/match`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ country: inputs.country || '', grades: distinct }),\n  });\n  const candidates = matchRes.ok ? await matchRes.json() : [];\n\n  // 2. Decide confidence: best scale must fully cover the grades and not tie another.\n  const top = candidates[0];\n  const second = candidates[1];\n  let reason = null;\n  if (!top || top.coverage < MIN_COVERAGE) {\n    reason = top ? 'low_coverage' : 'no_candidates';\n  } else if (\n    second &&\n    second.coverage === top.coverage &&\n    second.scale_total_grades === top.scale_total_grades\n  ) {\n    reason = 'ambiguous';\n  }\n\n  // 3a. Unresolved/ambiguous -> report needs-review instead of guessing.\n  if (reason) {\n    return {\n      status: 422,\n      body: {\n        status: 'NEEDS_REVIEW',\n        reason,\n        country: inputs.country || null,\n        candidates: candidates.slice(0, 5),\n      },\n    };\n  }\n\n  // 3b. Confident -> transfer only the grades the matched scale actually covers.\n  const unmatched = new Set(top.unmatched_grades || []);\n  const coveredGrades = grades.filter((g) => !unmatched.has(g.origin_grade));\n\n  const response = await fetch(`${BACKEND}/transfer/`, {\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n    },\n    body: JSON.stringify({ scale_id: top.scale_id, grades: coveredGrades }),\n  });\n\n  const transfer = await response.json();\n\n  return {\n    status: response.status,\n    body: {\n      scale_id: top.scale_id,\n      scale_description: top.scale_description,\n      unmatched_grades: top.unmatched_grades || [],\n      transfer,\n    },\n  };\n};",
+              "packageJson": "{}"
+            },
+            "errorHandlingOptions": {
+              "retryOnFailure": {
+                "value": false
+              },
+              "continueOnFailure": {
+                "value": false
+              }
+            }
+          },
+          "nextAction": {
+            "name": "step_2",
+            "type": "PIECE",
+            "valid": true,
+            "skip": false,
+            "displayName": "Return Response",
+            "lastUpdatedDate": "2026-06-27T00:00:00.000Z",
+            "settings": {
+              "input": {
+                "fields": {
+                  "body": "{{step_1.body}}",
+                  "status": "{{step_1.status}}",
+                  "headers": {}
+                },
+                "respond": "stop",
+                "responseType": "json"
+              },
+              "pieceName": "@activepieces/piece-webhook",
+              "actionName": "return_response",
+              "sampleData": {},
+              "pieceVersion": "0.1.29",
+              "propertySettings": {
+                "fields": {
+                  "type": "MANUAL",
+                  "schema": {
+                    "body": {
+                      "type": "JSON",
+                      "required": true,
+                      "displayName": "JSON Body"
+                    },
+                    "status": {
+                      "type": "NUMBER",
+                      "required": false,
+                      "displayName": "Status",
+                      "defaultValue": 200
+                    },
+                    "headers": {
+                      "type": "OBJECT",
+                      "required": false,
+                      "displayName": "Headers"
+                    }
+                  }
+                }
+              },
+              "errorHandlingOptions": {
+                "retryOnFailure": {},
+                "continueOnFailure": {}
+              }
+            }
+          }
+        },
+        "lastUpdatedDate": "2026-06-27T00:00:00.000Z",
+        "type": "PIECE_TRIGGER",
+        "settings": {
+          "propertySettings": {
+            "authType": {
+              "type": "MANUAL"
+            },
+            "authFields": {
+              "type": "MANUAL",
+              "schema": {}
+            },
+            "liveMarkdown": {
+              "type": "MANUAL"
+            },
+            "syncMarkdown": {
+              "type": "MANUAL"
+            },
+            "testMarkdown": {
+              "type": "MANUAL"
+            }
+          },
+          "pieceName": "@activepieces/piece-webhook",
+          "pieceVersion": "0.1.29",
+          "triggerName": "catch_webhook",
+          "input": {
+            "authType": "none",
+            "authFields": {}
+          }
+        }
+      },
+      "valid": true,
+      "schemaVersion": "20",
+      "notes": []
+    }
+  ],
+  "status": "PUBLISHED"
+}
