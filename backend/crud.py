@@ -27,6 +27,7 @@ async def get_scales(db: AsyncSession, skip: int = 0, limit: int = 100):
     """Fetch all available scales for the administrative list view using pagination."""
     query = (
         select(models.AcademicScale)
+        .order_by(models.AcademicScale.country_name.asc())
         .offset(skip)
         .limit(limit)
     )
